@@ -5,6 +5,11 @@ $conn = db_connect();
 
 $id = (int)($_GET['id'] ?? 0);
 
+// Increment view count
+if($id > 0){
+    $conn->query("UPDATE movies SET views = views + 1 WHERE id = $id");
+}
+
 // Fetch movie
 $movie = $conn->query("SELECT * FROM movies WHERE id=$id")->fetch_assoc();
 if(!$movie){ 
@@ -39,7 +44,6 @@ if($screenExists){
         ORDER BY show_time ASC
     ");
 }
-
 $stmt->bind_param('i', $id);
 $stmt->execute();
 $shows = $stmt->get_result();
@@ -47,35 +51,39 @@ $shows = $stmt->get_result();
 
 <style>
 /* ===== Reset & Base ===== */
+/* ===== Reset & Base ===== */
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(120deg,#f0f4f8,#e0e7ff);
-  color: #1f2937;
+  background: linear-gradient(120deg, #0f172a, #1e293b, #0f172a);
+  color: #f8fafc;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  animation: fadeBg 10s infinite alternate ease-in-out;
 }
 
-a {
-  text-decoration: none;
-  transition: all 0.3s ease;
+@keyframes fadeBg {
+  0% { background: linear-gradient(120deg, #0f172a, #1e293b); }
+  100% { background: linear-gradient(120deg, #1e293b, #111827); }
 }
 
-h2,h3 {
-  margin: 0;
-  font-weight: 600;
-}
+a { text-decoration: none; transition: all 0.3s ease; }
+h2,h3 { margin: 0; font-weight: 600; }
 
 /* ===== Container ===== */
 .movie-detail {
   display: flex;
   flex-wrap: wrap;
   max-width: 1200px;
-  margin: 10px auto;
+  margin: 15px auto;
   gap: 40px;
   padding: 0 20px;
-  align-items: flex-start;
-  animation: fadeInUp 1s ease forwards;
+  animation: slideFade 1.2s ease forwards;
+}
+
+@keyframes slideFade {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 /* ===== Poster ===== */
@@ -83,25 +91,26 @@ h2,h3 {
   flex-shrink: 0;
   max-width: 400px;
   overflow: hidden;
-  border-radius: 15px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-  transform: translateY(20px);
-  opacity: 0;
-  animation: fadeInUp 1s ease forwards;
-  animation-delay: 0.2s;
+  border-radius: 18px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  animation: softGlow 3s infinite alternate ease-in-out;
+}
+
+@keyframes softGlow {
+  0% { box-shadow: 0 10px 25px rgba(255,255,255,0.15); }
+  100% { box-shadow: 0 20px 50px rgba(255,255,255,0.25); }
 }
 
 .poster img {
   width: 100%;
-  display: block;
   height: 500px;
-  border-radius: 15px;
-  transition: transform 0.4s ease, filter 0.4s ease;
+  border-radius: 18px;
+  transition: transform 0.6s ease, filter 0.4s ease;
 }
 
 .poster img:hover {
-  transform: scale(1.05) rotate(1deg);
-  filter: brightness(1.05);
+  transform: scale(1.07) rotate(1deg);
+  filter: brightness(1.12);
 }
 
 /* ===== Info Section ===== */
@@ -110,32 +119,58 @@ h2,h3 {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  transform: translateX(30px);
-  opacity: 0;
-  animation: fadeInLeft 1s ease forwards;
-  animation-delay: 0.4s;
+  animation: slideLeft 1.3s ease forwards;
+}
+
+@keyframes slideLeft {
+  0% { opacity: 0; transform: translateX(50px); }
+  100% { opacity: 1; transform: translateX(0); }
 }
 
 .info h2 {
-  font-size: 2.4rem;
-  color: #1e3a8a;
+  font-size: 2.5rem;
+  background: linear-gradient(90deg, #38bdf8, #60a5fa, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shineText 3s infinite ease-in-out;
+}
+
+@keyframes shineText {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.5); }
+  100% { filter: brightness(1); }
 }
 
 .info p {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #374151;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #cbd5e1;
 }
 
-.info strong {
-  color: #111827;
+/* ===== Stats ===== */
+.info .movie-stats {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #e2e8f0;
+  padding: 10px 0;
+  border-top: 1px solid #475569;
+  border-bottom: 1px solid #475569;
+  animation: fadeInUp 1.5s ease forwards;
+}
+
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 /* ===== Upcoming Shows ===== */
 h3 {
-  font-size: 1.8rem;
-  color: #2563eb;
-  margin-bottom: 15px;
+  font-size: 1.6rem;
+  color: #38bdf8;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(56,189,248,0.8);
 }
 
 .show-list {
@@ -147,51 +182,56 @@ h3 {
 }
 
 .show-list li {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px);
   padding: 15px 20px;
   border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  animation: cardPop 0.8s ease forwards;
+}
+
+@keyframes cardPop {
+  0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .show-list li:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+  background: rgba(255,255,255,0.12);
 }
 
 .show-list li span {
   font-weight: 500;
-  color: #1f2937;
-  font-size: 0.95rem;
+  color: #e2e8f0;
 }
 
+/* ===== Buttons ===== */
 .show-list li .btn {
-  background: #1e40af;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
   color: #fff;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
   font-weight: bold;
-  width: 149px;
-  transition: background 0.3s, transform 0.2s;
+  width: 150px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: pulseBtn 2.2s infinite ease;
+}
+
+@keyframes pulseBtn {
+  0% { transform: scale(1); box-shadow: 0 0 10px rgba(59,130,246,0.4); }
+  50% { transform: scale(1.07); box-shadow: 0 0 20px rgba(37,99,235,0.6); }
+  100% { transform: scale(1); box-shadow: 0 0 10px rgba(59,130,246,0.4); }
 }
 
 .show-list li .btn:hover {
-  background: #2563eb;
-  transform: scale(1.05);
-}
-
-/* ===== Animations ===== */
-@keyframes fadeInUp {
-  0% { transform: translateY(30px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes fadeInLeft {
-  0% { transform: translateX(50px); opacity: 0; }
-  100% { transform: translateX(0); opacity: 1; }
+  transform: scale(1.1);
+  background: linear-gradient(90deg, #60a5fa, #3b82f6);
 }
 
 /* ===== Responsive ===== */
@@ -207,21 +247,6 @@ h3 {
 
 </style>
 
-<script>
-  // Fade-in on scroll for movie info
-const fadeElems = document.querySelectorAll('.info, .poster');
-window.addEventListener('scroll', () => {
-  fadeElems.forEach(el => {
-    const rect = el.getBoundingClientRect();
-    if(rect.top < window.innerHeight - 50){
-      el.style.opacity = 1;
-      el.style.transform = 'translate(0,0)';
-    }
-  });
-});
-
-</script>
-
 <div class="movie-detail">
   <div class="poster">
     <?php if(!empty($movie['poster'])): ?>
@@ -234,10 +259,14 @@ window.addEventListener('scroll', () => {
   <div class="info">
     <h2><?=htmlspecialchars($movie['title'])?></h2>
     <p><?=nl2br(htmlspecialchars($movie['description'] ?? 'No description available.'))?></p>
-    <p>
-      <strong>Duration:</strong> <?=htmlspecialchars($movie['duration'] ?? 'N/A')?> min | 
-      <strong>Genre:</strong> <?=htmlspecialchars($movie['genre'] ?? 'N/A')?>
-    </p>
+    
+    <!-- Duration & Views -->
+    <div class="movie-stats">
+      <div>⏱ <?=htmlspecialchars($movie['duration'] ?? 'N/A')?> min</div>
+      <div>👁 <?=intval($movie['views'] ?? 0)?> Views</div>
+    </div>
+    
+    <p><strong>Genre:</strong> <?=htmlspecialchars($movie['genre'] ?? 'N/A')?></p>
     
     <h3>Upcoming Shows</h3>
     <?php if($shows && $shows->num_rows > 0): ?>

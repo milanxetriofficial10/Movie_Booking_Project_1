@@ -27,82 +27,154 @@ function formatDuration($minutes) {
     $m = $minutes % 60;
     return sprintf("%dh %02dm", $h, $m);
 }
+
+// Fetch $id from URL if available
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+if($id > 0){
+    $conn->query("UPDATE movies SET views = views + 1 WHERE id = $id");
+}
+
 ?>
 
 <style>
-/* ===== General Reset ===== */
 * { box-sizing:border-box; margin:0; padding:0; }
-body { font-family:Arial,sans-serif; background:#11141b; color:#fff; }
+body { font-family:Arial,sans-serif; background: linear-gradient(120deg, #443802ff, rgba(119, 60, 1, 0.94),rgba(29, 27, 25, 0.99)); color:#fff; }
 
-/* ===== News Ticker ===== */
-.ticker-container {
-    background:#ffe816;
-    overflow:hidden;
-    white-space:nowrap;
-    padding:10px 0;
-    font-weight:bold;
-}
-.ticker-text {
-    display:inline-block;
-    padding-left:100%;
-    animation:ticker 20s linear infinite;
-    color:#111;
-    font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
-}
-@keyframes ticker {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
-}
+/* News Ticker */
+.ticker-container { background:#ffe816; overflow:hidden; white-space:nowrap; padding:10px 0; font-weight:bold; }
+.ticker-text { display:inline-block; padding-left:100%; animation:ticker 20s linear infinite; color:#111; font-family: 'Merriweather', Georgia, 'Times New Roman', serif; }
+@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
-/* ===== Slider ===== */
+/* Slider */
 .slider-container { position:relative; width:100%; max-width:1500px; overflow:hidden; border-radius:12px; box-shadow:0 8px 25px rgba(248, 22, 22, 0.88); }
-.slider-slide { position:relative; width:100%; height:450px; display:none; background-size:cover; background-position:center; }
+.slider-slide { position:relative; width:100%; height:500px; display:none; background-size:cover; background-position:center; }
 .slider-slide.active { display:block; }
 .slider-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(24, 17, 17, 0.59); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:0 20px; }
 .slider-overlay h2 { font-weight:700; color:#74f708ff; font-size:49px; margin-bottom:15px; text-shadow:2px 12px 15px #e2e9e2fc; font-family:'Merriweather', Georgia, 'Times New Roman', serif; }
 .slider-overlay p { font-weight:600; color:hsla(59, 98%, 51%, 0.99); font-size:25px; margin-bottom:20px; max-width:700px; text-shadow:1px 10px 4px hsla(0, 73%, 57%, 0.97); font-family:'Lato', 'Open Sans', 'Gill Sans', Calibri, sans-serif; }
 .slider-overlay a { display:inline-block; padding:12px 30px; background:#ff4c60; color:#fff; font-weight:bold; border-radius:6px; text-decoration:none; transition:0.3s; font-family:'Times New Roman'; }
 .slider-overlay a:hover { background:#ff1a3c; }
-
-/* Slider dots */
 .slider-dots { position:absolute; bottom:20px; width:100%; text-align:center; }
 .slider-dots span { display:inline-block; width:20px; height:4px; margin:0 6px; background: rgba(255,255,255,0.5); border-radius:20%; cursor:pointer; transition:0.3s; }
 .slider-dots span.active { background:#ff4c60; }
 
-/* ===== Movie Cards ===== */
-.movie-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:20px; max-width:1200px; margin:50px auto; padding:0 15px; }
-.movie-card { background:linear-gradient(145deg,#85f369,#160c14,#f1620e); border-radius:15px; overflow:hidden; box-shadow:0px 10px 5px rgba(235, 24, 24, 0.97); transition:transform 0.3s, box-shadow 0.3s; position:relative; display:flex; flex-direction:column; }
-.movie-card:hover { transform:translateY(-8px); box-shadow:0 25px 45px rgba(0,0,0,0.2); }
-.movie-card img { background: rgba(24, 17, 17, 0.78); width:100%; height:220px; object-fit:cover; transition:transform 0.5s; }
-.movie-card:hover img { transform:scale(1.05); background: rgba(24, 17, 17, 0.59); }
-.movie-card h3 { font-size:1.2rem; color:#fff; margin:15px; font-weight:700; text-align:center; }
-.movie-card p { font-size:0.95rem; color:#eee; margin:0 15px 15px;  -webkit-line-clamp: 2; line-height:1.5; text-align:justify; flex-grow:1; }
+/* Movie Cards */
+.movie-grid { 
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 22px;
+    max-width: 1220px;
+    margin: 60px auto;
+    padding: 0 15px;
+    /* height removed so grid auto adjusts */
+}
 
-/* ===== Trailer Button Animation ===== */
-.trailer-btn { position:absolute; bottom:-60px; left:50%; transform:translateX(-50%); background: rgba(252, 202, 41, 1); color: rgba(3, 3, 3, 1); width: 143px; font-weight:500; padding:12px 20px; border-radius:30px; text-decoration:none; opacity:0; transition:all 0.5s ease; display:flex; align-items:center; gap:8px; }
-.movie-card:hover .trailer-btn { bottom:50%; opacity:1; }
-.trailer-btn:hover { background:#ff1a3c; box-shadow:0 0 15px rgba(108, 250, 26, 0.94); }
+.movie-card { background: linear-gradient(145deg, #85f369, #160c14, #f1620e); border-radius:15px; overflow:hidden; box-shadow:0px 10px 5px rgba(235, 24, 24, 0.97); transition: transform 0.3s, box-shadow 0.3s; position:relative; display:flex; flex-direction:column; cursor:pointer; }
+.movie-card:hover { transform:translateY(-10px) rotate(-1deg); box-shadow:0 35px 45px rgba(0,0,0,0.3); }
+.movie-card img { width:100%; height:260px; object-fit:cover; transition: transform 0.5s, filter 0.5s; }
+.movie-card:hover img { transform: scale(1.08) rotate(1deg); filter: brightness(1.15) contrast(1.1); }
+/* Movie Title with Glow & Pulse Animation */
+.movie-card h3 {
+    font-size: 1.3rem;
+    margin: 10px 15px 5px;
+    font-weight: 700;
+    text-align: center;
+    color: #93fd09ff;
+    text-shadow: 0px 2px 5px rgba(230, 222, 222, 0.7);
+    position: relative;
+    transition: color 0.5s, transform 0.3s, text-shadow 0.3s;
+    animation: glowPulse 2.5s infinite alternate;
+}
 
-/* ===== Book Now Button ===== */
-.movie-card .btn { display:block; margin:0 15px 15px 15px; padding:12px; background:#2563eb; color:#fff; text-align:center; font-weight:600; border-radius:8px; text-decoration:none; transition:0.3s; position:relative; }
-.movie-card .btn:hover { background:#1e40af; transform:translateY(-2px); box-shadow:0 8px 15px rgba(37,99,235,0.3); }
+/* Glow + Slight Movement Animation */
+@keyframes glowPulse {
+    0% {
+        color: #93fd09ff;
+        text-shadow: 0 0 5px rgba(147, 253, 9, 0.7), 0 0 10px rgba(147, 253, 9, 0.5);
+        transform: translateY(0px);
+    }
+    50% {
+        color: #f32c12ff;
+        text-shadow: 0 0 15px rgba(255, 255, 90, 0.9), 0 0 25px rgba(255, 255, 90, 0.6);
+        transform: translateY(-2px);
+    }
+    100% {
+        color: #93fd09ff;
+        text-shadow: 0 0 5px rgba(147, 253, 9, 0.7), 0 0 10px rgba(147, 253, 9, 0.5);
+        transform: translateY(0px);
+    }
+}
 
-/* ===== Responsive ===== */
-@media(max-width:768px){ .slider-slide { height:350px; } .slider-overlay h2 { font-size:32px; } .slider-overlay p { font-size:16px; } .movie-card img { height:180px; } }
+/* Hover effect for extra pop */
+.movie-card:hover h3 {
+    color: #ffde59;
+    text-shadow: 0 0 20px #ffde59, 0 0 35px rgba(255, 222, 89, 0.7);
+    transform: translateY(-3px) scale(1.05);
+}
 
-/* ===== Title Line ===== */
+
+/* Animated Language Text Only */
+.movie-card .language {
+    display: inline-block;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #ffeb3b; /* bright yellow */
+    margin-bottom: 25px;
+    text-align: center;
+    text-shadow: 0 0 4px #ffeb3b, 0 0 8px #ffe600, 0 0 12px #fff700;
+    animation: glowFloat 2s infinite alternate ease-in-out;
+    cursor: default;
+}
+
+/* Glow + Floating Animation */
+@keyframes glowFloat {
+    0% {
+        transform: translateY(0) scale(1);
+        text-shadow: 0 0 4px #ffeb3b, 0 0 8px #ffe600, 0 0 12px #fff700;
+        color: #ffeb3b;
+    }
+    50% {
+        transform: translateY(-4px) scale(1.05);
+        text-shadow: 0 0 8px #ffeb3b, 0 0 16px #ffe600, 0 0 24px #fff700;
+        color: #fff;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        text-shadow: 0 0 4px #ffeb3b, 0 0 8px #ffe600, 0 0 12px #fff700;
+        color: #ffeb3b;
+    }
+}
+
+/* Optional: Hover effect for extra pop */
+.movie-card:hover .language {
+    transform: translateY(-2px) scale(1.1);
+    text-shadow: 0 0 12px #ffeb3b, 0 0 20px #fff700, 0 0 28px #ffe600;
+    color: #fff;
+}
+
+
+.movie-card .views { text-align:center; font-size:0.9rem; font-weight:bold; color:#fefefe; margin-bottom:8px; }
+.movie-card .btn { display:block; margin:10px 15px 15px 15px; padding:12px; background: linear-gradient(90deg,#2563eb,#1d4ed8); color:#fff; text-align:center; font-weight:600; border-radius:12px; text-decoration:none; transition: all 0.4s ease; position:relative; overflow:hidden; }
+.movie-card .btn:hover { background: linear-gradient(90deg,#1e40af,#3b82f6); transform:translateY(-3px) scale(1.03); box-shadow:0 10px 20px rgba(37,99,235,0.3); }
+.trailer-btn { position:absolute; bottom:-60px; left:50%; transform:translateX(-50%); background: rgba(252, 202, 41, 1); color: rgba(3, 3, 3, 1); width: 140px; font-weight:600; padding:12px 20px; border-radius:30px; text-decoration:none; opacity:0; transition: all 0.5s ease; display:flex; align-items:center; justify-content:center; }
+.movie-card:hover .trailer-btn { bottom:40%; opacity:1; transform: translateX(-50%) translateY(-10px); }
+.trailer-btn:hover { background:#ff1a3c; box-shadow:0 0 20px rgba(255,30,60,0.7); }
+.movie-card::before {  content:""; position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); z-index:0; transition: all 0.5s ease; border-radius:15px; }
+.movie-card:hover::before { background: linear-gradient(to top, rgba(0,0,0,0.3), transparent); }
+@media(max-width:768px){ .movie-card img { height:180px; } .movie-card h3 { font-size:1.1rem; } .trailer-btn { width:120px; font-size:0.85rem; padding:8px 15px; } }
+
+/* Title Line */
 .line-container { position: relative; width: 100%; text-align: center; margin:0px; }
 .line-container h2 { display:inline-block; font-size:25px; color:hsla(91, 98%, 52%, 1); font-weight:bold; font-family:'Merriweather', Georgia, 'Times New Roman', serif; position:relative; padding-bottom:0px; text-shadow:1px 10px 4px hsla(101, 87%, 49%, 0.97); }
 .line-container h2 span { font-family:'Lato', 'Open Sans', 'Gill Sans', Calibri, sans-serif; color:rgba(247, 211, 9, 1); font-weight:bold; text-shadow:1px 8px 4px hsla(59, 93%, 40%, 0.97); }
 .line-container h2::after { content:""; position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:100%; height:2px; background:linear-gradient(90deg, #ff4d4d, #ff9933); border-radius:2px; }
 </style>
 
-<!-- ===== News Ticker ===== -->
-<div class="ticker-container">
-    <div class="ticker-text"><?=htmlspecialchars($news_text)?></div>
-</div>
+<!-- News Ticker -->
+<div class="ticker-container"><div class="ticker-text"><?=htmlspecialchars($news_text)?></div></div>
 
-<!-- ===== Slider ===== -->
+<!-- Slider -->
 <div class="slider-container">
 <?php foreach($slides as $s): ?>
     <div class="slider-slide" style="background-image:url('uploads/<?=htmlspecialchars($s['image_name'] ?? '')?>');">
@@ -143,36 +215,40 @@ setInterval(nextSlide,5000);
 showSlide(current);
 </script>
 
-<br>
-<div class="line-container">
-  <h2> <span>Now Showing -</span> Movies Book Now Please <span>| Nepali | Hindi | English | Korean </span></h2>
-</div>
+<div class="line-container"><h2><span>Now Showing | Nepali | Hindi | English | Korean </span></h2></div>
 
-<!-- ===== Movie Section ===== -->
+<!-- Movie Section -->
 <section class="movie-grid">
 <?php while($m = $movies->fetch_assoc()): ?>
   <article class="movie-card">
-    <?php if($m['poster']): ?>
-      <img src="/Movie_Booking_Project_1/uploads/<?=htmlspecialchars($m['poster'])?>" alt="<?=htmlspecialchars($m['title'])?>">
-    <?php else: ?>
-      <img src="/Movie_Booking_Project_1/uploads/default.jpg" alt="No Poster">
-    <?php endif; ?>
+    <img src="/Movie_Booking_Project_1/uploads/<?=htmlspecialchars($m['poster'] ?: 'default.jpg')?>" alt="<?=htmlspecialchars($m['title'])?>">
+    
     <h3><?=htmlspecialchars($m['title'])?></h3>
-    <p><?=nl2br(htmlspecialchars(substr($m['description'],0,69)))?></p>
 
-    <!-- Show duration -->
-    <p style="text-align:center; font-weight:bold; color:#fff; margin-bottom:8px;">
-      Duration: <?=formatDuration($m['duration'])?>
-    </p>
+    <!-- Language -->
+    <div class="language"><?=htmlspecialchars($m['language'] ?? 'N/A')?></div>
+    
+    <!-- Duration and Views Row -->
+    <div style="display:flex; justify-content:space-between; padding:0 15px; margin-bottom:10px; font-weight:bold; color:#fefefe; font-size:0.9rem;">
+        <div>Time: <?=formatDuration($m['duration'])?></div>
+        <div>👁️ <?=intval($m['views'] ?? 0)?> Views</div>
+    </div>
 
-    <!-- Trailer Button with Animation -->
+    <!-- Trailer Button -->
     <?php if(!empty($m['trailer'])): ?>
       <a class="trailer-btn" href="<?=htmlspecialchars($m['trailer'])?>" target="_blank">Watch Trailer</a>
     <?php endif; ?>
 
-    <a class="btn" href="movie_view.php?id=<?=htmlspecialchars($m['id'])?>">View Show times</a>
+    <!-- View Show times with AJAX increment -->
+    <a class="btn" href="movie_view.php?id=<?=htmlspecialchars($m['id'])?>" onclick="incrementView(<?= $m['id'] ?>)">View Show times</a>
   </article>
 <?php endwhile; ?>
 </section>
+
+<script>
+function incrementView(id){
+    fetch('increment_view.php?id=' + id);
+}
+</script>
 
 <?php require 'includes/footer.php'; ?>

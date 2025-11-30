@@ -33,6 +33,7 @@ $bookings = $conn->query("
 <meta charset="utf-8">
 <link rel="stylesheet" href="/movie-booking/admin/assets/css/admin.css">
 <title>Manage Bookings</title>
+ <link rel="shortcut icon" href="../imgs/40b3a7667c57b37bb66735d67609798e-modified.png" type="image/png">
 <style>
 .admin-container {padding:20px;}
 .card {background:#fff; padding:20px; border-radius:10px; margin-bottom:20px; box-shadow:0 2px 10px rgba(0,0,0,0.1);}

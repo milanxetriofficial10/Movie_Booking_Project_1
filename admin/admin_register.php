@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html>
 <head>
 <title>Admin Register</title>
+ <link rel="shortcut icon" href="../imgs/40b3a7667c57b37bb66735d67609798e-modified.png" type="image/png">
 <style>
 body { background:#eef2f3; font-family:Arial; }
 .form-box {
@@ -58,3 +59,5 @@ p { color:red; }
 
 </body>
 </html>
+
+

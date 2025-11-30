@@ -46,6 +46,7 @@ if ($result = $conn->query("SELECT COUNT(*) as c FROM bookings")) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/movie-booking/admin/assets/css/admin.css">
+  <link rel="shortcut icon" href="../imgs/40b3a7667c57b37bb66735d67609798e-modified.png" type="image/png">
   <title>Admin Dashboard</title>
   <style>
     body {font-family: Arial, sans-serif; background: #f3f4f6; margin:0;}
@@ -66,6 +67,7 @@ if ($result = $conn->query("SELECT COUNT(*) as c FROM bookings")) {
   <a href="shows.php">Shows</a> |
   <a href="bookings.php">Bookings</a> |
   <a href="top_news.php">Add Top News</a> |
+  <a href="admin_location.php">Add location</a> |
   <a href="logout.php">Logout</a>
 </nav>
 

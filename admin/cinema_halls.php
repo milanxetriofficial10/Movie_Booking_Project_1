@@ -37,6 +37,7 @@ $halls = $conn->query("SELECT * FROM cinema_halls ORDER BY id DESC");
 <html>
 <head>
 <title>Manage Cinema Halls</title>
+ <link rel="shortcut icon" href="../imgs/40b3a7667c57b37bb66735d67609798e-modified.png" type="image/png">
 <style>
 body { font-family: Arial,sans-serif; background:#f4f6f9; padding:0; margin:0; }
 .container { max-width: 800px; margin: 30px auto; padding: 20px; background:#fff; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }

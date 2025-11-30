@@ -76,6 +76,7 @@ $shows = $conn->query("
 <meta charset="utf-8">
 <link rel="stylesheet" href="/movie-booking/admin/assets/css/admin.css">
 <title>Manage Shows</title>
+ <link rel="shortcut icon" href="../imgs/40b3a7667c57b37bb66735d67609798e-modified.png" type="image/png">
 <style>
 .admin-container {padding:20px;}
 .two-col {display:flex; gap:20px; flex-wrap:wrap;}

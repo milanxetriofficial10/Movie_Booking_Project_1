@@ -90,7 +90,7 @@ $mpdf = new Mpdf();
 $billHTML = "
 <div style='font-family:sans-serif; max-width:400px; margin:auto; padding:20px; border:1px solid #ddd; border-radius:10px;'>
     <div style='text-align:center;'>
-        <img src='imgs/e32e183fd326fd5cd49ab3df467e54a8.jpg' style='width:80px;' alt='CineMa Ghar'>
+        <img src='imgs/40b3a7667c57b37bb66735d67609798e-modified.png' style='width:80px;' alt='CineMa Ghar'>
         <h2>CineMa Ghar</h2>
         <p>Booking Receipt</p>
     </div>
@@ -141,7 +141,7 @@ try {
 
 // ===== Twilio SMS =====
 $sid = 'AC0e4c68c6dc1c009662f313dfab49cf41';
-$token = 'cd994a2619109ab79e49cf615e6338c4';
+$token = '0399c1592fe7b5f98ce3a3b70c34745e';
 $twilio_number = '+12023357259';
 
 if (strpos($user_mobile, '+977') !== 0) {

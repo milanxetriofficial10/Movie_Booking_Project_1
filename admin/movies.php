@@ -15,15 +15,19 @@ $msg = '';
 // Folder to store uploaded posters
 $uploadDir = __DIR__ . '/../uploads/';
 
+// Available languages
+$languages = ['Nepali','Hindi','English','Korean','Chinese','Japanese']; // Add more as needed
+
 // Handle Add or Update Movie
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = trim($_POST['title']);
     $desc = trim($_POST['description']);
     $duration_hours = (int)$_POST['duration_hours'];
     $duration_minutes = (int)$_POST['duration_minutes'];
-    $duration = $duration_hours * 60 + $duration_minutes; // convert to total minutes
+    $duration = $duration_hours * 60 + $duration_minutes;
     $genre = trim($_POST['genre']);
     $trailer = trim($_POST['trailer']);
+    $language = trim($_POST['language']); // New field
     $posterName = $_POST['old_poster'] ?? null;
     $id = isset($_POST['movie_id']) ? (int)$_POST['movie_id'] : 0;
 
@@ -45,12 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Insert or Update
     if (!$msg) {
         if ($id > 0) {
-            $stmt = $conn->prepare("UPDATE movies SET title=?, description=?, duration=?, genre=?, trailer=?, poster=? WHERE id=?");
-            $stmt->bind_param('ssisssi', $title, $desc, $duration, $genre, $trailer, $posterName, $id);
+            $stmt = $conn->prepare("UPDATE movies SET title=?, description=?, duration=?, genre=?, trailer=?, poster=?, language=? WHERE id=?");
+            $stmt->bind_param('ssissssi', $title, $desc, $duration, $genre, $trailer, $posterName, $language, $id);
             $msg = $stmt->execute() ? "Movie updated successfully!" : "Error: " . $stmt->error;
         } else {
-            $stmt = $conn->prepare("INSERT INTO movies (title,description,duration,genre,trailer,poster) VALUES (?,?,?,?,?,?)");
-            $stmt->bind_param('ssisss', $title, $desc, $duration, $genre, $trailer, $posterName);
+            $stmt = $conn->prepare("INSERT INTO movies (title,description,duration,genre,trailer,poster,language) VALUES (?,?,?,?,?,?,?)");
+            $stmt->bind_param('ssissss', $title, $desc, $duration, $genre, $trailer, $posterName, $language);
             $msg = $stmt->execute() ? "Movie added successfully!" : "Error: " . $stmt->error;
         }
     }
@@ -88,6 +92,7 @@ function formatDuration($minutes) {
 <head>
 <meta charset="UTF-8">
 <title>Manage Movies</title>
+ <link rel="shortcut icon" href="../imgs/40b3a7667c57b37bb66735d67609798e-modified.png" type="image/png">
 <link rel="stylesheet" href="/movie-booking/admin/assets/css/admin.css">
 <style>
 body { font-family: Arial, sans-serif; background: #f0f2f5; margin:0; padding:0; }
@@ -132,6 +137,13 @@ a:hover { text-decoration:underline; }
 
         <input name="genre" placeholder="Genre" required value="<?=htmlspecialchars($editMovie['genre'] ?? '')?>">
         <input name="trailer" placeholder="Trailer URL (YouTube embed or link)" value="<?=htmlspecialchars($editMovie['trailer'] ?? '')?>">
+        <select name="language" required>
+            <option value="">Select Language</option>
+            <?php foreach($languages as $lang): ?>
+                <option value="<?= $lang ?>" <?= isset($editMovie['language']) && $editMovie['language']==$lang ? 'selected' : '' ?>><?= $lang ?></option>
+            <?php endforeach; ?>
+        </select>
+
         <input type="file" name="poster" accept="image/*">
         <?php if($editMovie && $editMovie['poster']): ?>
           <p>Current Poster: <img src="/Movie_Booking_Project_1/uploads/<?=$editMovie['poster']?>" style="width:60px;"></p>
@@ -144,7 +156,7 @@ a:hover { text-decoration:underline; }
     <div class="card">
       <h3>All Movies</h3>
       <table>
-        <thead><tr><th>ID</th><th>Poster</th><th>Title</th><th>Duration</th><th>Trailer</th><th>Action</th></tr></thead>
+        <thead><tr><th>ID</th><th>Poster</th><th>Title</th><th>Duration</th><th>Language</th><th>Trailer</th><th>Action</th></tr></thead>
         <tbody>
         <?php while($m = $movies->fetch_assoc()): ?>
           <tr>
@@ -158,6 +170,7 @@ a:hover { text-decoration:underline; }
             </td>
             <td><?=htmlspecialchars($m['title'])?></td>
             <td><?=formatDuration($m['duration'])?></td>
+            <td><?=htmlspecialchars($m['language'] ?? 'N/A')?></td>
             <td>
               <?php if(!empty($m['trailer'])): ?>
                 <a href="<?=$m['trailer']?>" target="_blank">Watch</a>

@@ -63,6 +63,7 @@ $news_list = $conn->query("SELECT * FROM movie_news ORDER BY id DESC");
 <head>
 <meta charset="UTF-8">
 <title>Manage Movie News</title>
+ <link rel="shortcut icon" href="../imgs/40b3a7667c57b37bb66735d67609798e-modified.png" type="image/png">
 <style>
 body{font-family: Arial, sans-serif; background:#111; color:#fff; margin:0; padding:20px;}
 .container{max-width:800px; margin:auto;}

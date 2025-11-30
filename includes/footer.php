@@ -1,105 +1,272 @@
-<?php
-// footer.php
-?>
-</main>
+<!-- NEW FONT AWESOME FIX -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
-<footer class="site-footer">
-  <!-- Simple Divider Line -->
-<div class="divider"></div>
-  <div class="footer-top">
-    <div class="container footer-flex">
-      <!-- Logo + Description -->
-      <div class="footer-logo">
-        <img src="/Movie_Booking_Project_1/imgs/e32e183fd326fd5cd49ab3df467e54a8.jpg" alt="CineMagic Logo" class="logo-img">
-        <p>Your ultimate destination for movie booking. Experience cinema like never before!</p>
-      </div>
+<footer class="main-footer">
+    <div class="footer-container">
 
-      <!-- Quick Links -->
-      <div class="footer-links">
-        <h4>Quick Links</h4>
-        <ul>
-          <li><a href="/movie-booking/index.php">Home</a></li>
-          <li><a href="/movie-booking/admin/index.php">Admin</a></li>
-          <li><a href="/movie-booking/movies.php">Movies</a></li>
-          <li><a href="/movie-booking/contact.php">Contact Us</a></li>
-        </ul>
-      </div>
+        <!-- LEFT SIDE -->
+        <div class="footer-left">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="#">Home</a></li>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Products</a></li>
+                <li><a href="#">Support</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
 
-      <!-- Social Media -->
-      <div class="footer-social">
-        <h4>Follow Us</h4>
-        <div class="social-icons">
-          <a href="#"><img src="imgs/download.png" alt="Facebook"></a>
-          <a href="#"><img src="imgs/download (3).png" alt="Twitter"></a>
-          <a href="#"><img src="imgs/download (1).png" alt="Instagram"></a>
-          <a href="#"><img src="imgs/download (2).png" alt="YouTube"></a>
+            <br>
+            <br>
+            <br>
+            <div class="wallets">
+              <h3>Digital Wallets</h3>
+                <img src="imgs/esewa_logo.png">
+                <img src="imgs/logo1.png">
+                <img src="imgs/global-ime-logo-svg.svg">
+                <img src="imgs/new logo.jpeg">
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="footer-bottom">
-    <div class="container">
-      © <?=date('Y')?> CineMa Ghar. All Rights Reserved.
+        <!-- CENTER -->
+        <div class="footer-center">
+            <img src="imgs/40b3a7667c57b37bb66735d67609798e-modified.png" class="footer-logo">
+
+            <p class="center-text">
+                डिजिटल यात्रामा तपाइँसँगै—  
+                हाम्रो सेवा, तपाइँको भरोसा।
+            </p>
+
+            <div class="subscribe-box">
+                <input type="email" id="subEmail" placeholder="Enter your email">
+                <button onclick="subscribeEmail()">Subscribe</button>
+            </div>
+
+            <p id="subMessage" class="success-msg"></p>
+
+            <!-- SOCIAL ICONS -->
+            <div class="social-icons">
+                <a href="#"><i class="fa-brands fa-facebook"></i></a>
+                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#"><i class="fa-brands fa-youtube"></i></a>
+                <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="footer-right">
+            <h3>About Our Service</h3>
+            <p>
+                समयसँगै बदलिंदै गएको डिजिटल संसारमा,  
+                हामीले ल्याएका छौँ सहज, सरल र आधुनिक सेवाहरू।
+            </p>
+             <!-- ⭐ NEW CONTACT ROW -->
+              <br>
+    
+               
+    <div class="contact-info">
+       <h3>About Our Service</h3>
+        <p><i class="fa-solid fa-envelope"></i> info@example.com</p>
+        <p><i class="fa-solid fa-phone"></i> +977 9800000000</p>
+        <p><i class="fa-solid fa-location-dot"></i> Kathmandu, Nepal</p>
+        </div>
+
     </div>
-  </div>
+
+    <div class="footer-bottom">
+        © 2025 All Rights Reserved | Developed with ♥ by Kazi
+    </div>
 </footer>
 
+<!-- FontAwesome Icons -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
 <style>
-/* Footer Styles */
-.site-footer {
-  background: #0c0e13ff;
-  color: #f5f5f5;
-  font-family: 'Poppins', sans-serif;
-  margin-top: 50px;
+  /* CONTACT INFO */
+.contact-info{
+    margin-top:15px;
+    line-height:1.8;
 }
 
-.site-footer a { color: #f5f5f5; text-decoration: none; transition: 0.3s; }
-.site-footer a:hover { color: #93c5fd; }
+.contact-info p{
+    opacity:0.9;
+    font-size:15px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
 
-.footer-top { padding: 40px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.footer-flex { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px; }
+.contact-info i{
+    color:#4d9fff;
+    font-size:18px;
+}
 
-.footer-logo img.logo-img { width: 120px; border-radius: 50%; margin-left: 80px; margin-bottom: 10px; }
-.footer-logo p { max-width: 280px; font-size: 0.9rem; line-height: 1.5; color: #e0e7ff; }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Poppins",sans-serif;
+}
 
-.footer-links h4, .footer-social h4 { font-size: 1.1rem; margin-bottom: 12px; font-weight: 600; color: #fff; }
-.footer-links ul { list-style: none; padding: 0; }
-.footer-links ul li { margin-bottom: 8px; }
-.footer-links ul li a { font-size: 0.95rem; }
+.main-footer{
+    background: linear-gradient(135deg, #a79846ff, #c24b07ff, #792e6fff);
+    color:white;
+    padding:50px 0 20px;
+     border-radius:10px;
 
-.footer-social .social-icons { display: flex; gap: 18px;  margin-right: 100px; }
-.footer-social .social-icons a img { width: 29px; transition: transform 0.3s; 
-  }
+}
 
-.footer-social .social-icons a:hover img { transform: scale(1.2);  }
+.footer-container{
+    width:90%;
+    margin:auto;
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:40px;
+}
 
-.footer-bottom { padding: 15px 0; text-align: center; font-size: 0.85rem; color: #c7d2fe; }
+/* LEFT */
+.footer-left h3{
+    margin-bottom:10px;
+    color: rgba(29, 255, 9, 1);
+}
+.footer-left ul{
+    list-style:none;
+    display:grid;
+    grid-template-columns: repeat(2, auto);  /* 2 columns */
+    gap:8px 20px;  /* row gap , column gap */
+    padding-left:5px;
+}
+
+.footer-left ul li a{
+    color:#08f3ccff;
+    font-size:17px;
+    font-weight:500;
+    text-decoration: none;  /* underline हटाउन यो line */
+    transition:0.3s;
+}
+
+.footer-left ul li a:hover{
+    color:white;
+    transform:translateX(4px);
+}
+
+
+/* Wallet */
+.wallets img{
+    width:70px;
+    margin-right:10px;
+    margin-top:10px;
+    transition:0.3s;
+}
+.wallets img:hover{
+    transform:scale(1.1);
+}
+
+/* CENTER */
+.footer-center{
+    text-align:center;
+    flex:1;
+}
+.footer-logo{
+    width:120px;
+    margin-bottom:10px;
+     border-radius:30px;
+    animation:float 3s infinite ease-in-out;
+}
+@keyframes float{
+    0%{transform:translateY(0);}
+    50%{transform:translateY(-8px);}
+    100%{transform:translateY(0);}
+}
+
+.center-text{
+    margin:10px 0;
+    opacity:0.9;
+}
+
+/* Subscribe */
+.subscribe-box{
+    display:flex;
+    justify-content:center;
+    margin-top:10px;
+    gap:8px;
+}
+.subscribe-box input{
+    padding:10px;
+    width:220px;
+    border:none;
+    border-radius:5px;
+}
+.subscribe-box button{
+    padding:10px 18px;
+    border:none;
+    background:#4d68ff;
+    color:white;
+    border-radius:5px;
+    cursor:pointer;
+    transition:0.3s;
+}
+.subscribe-box button:hover{
+    background:#6b82ff;
+}
+
+/* ⭐ Social Icons */
+.social-icons{
+    margin-top:20px;
+}
+.social-icons a{
+    color: #082192ff;
+    font-size:26px;
+    margin:0 10px;
+    transition:0.3s;
+}
+.social-icons a:hover{
+    color:#64b5ff;
+    transform:scale(1.2);
+}
+
+/* RIGHT */
+.footer-right{
+    max-width:260px;
+}
+.footer-right h3{
+    margin-bottom:10px;
+    color: rgba(29, 255, 9, 1);
+}
+.footer-right p{
+    opacity:0.9;
+}
+
+/* Bottom */
+.footer-bottom{
+    width:100%;
+    text-align:center !important;
+    display:block;
+}
+
 
 /* Responsive */
-@media (max-width: 768px) {
-  .footer-flex { flex-direction: column; align-items: center; text-align: center; }
-  .footer-logo p { max-width: 100%; }
-  .footer-social .social-icons { justify-content: center; }
-}
-/* Divider Line Style */
-.divider {
-  width: 100%;          /* लाइनको width */
-  height: 3px;         /* लाइनको मोटाइ */
-  background: #2563eb; /* लाइनको color */
-  margin: 30px auto;   /* माथि तल spacing */
-  border-radius: 1px;  /* अलिक smooth effect */
-}
-
-/* Optional: Hover effect */
-.divider:hover {
-  background: #d2f50cff;
-  height: 4px;
-  transition: all 0.3s ease;
+@media (max-width:768px){
+    .footer-container{
+        flex-direction:column;
+        text-align:center;
+    }
 }
 
 </style>
+<script>
+function subscribeEmail(){
+    let email = document.getElementById("subEmail").value;
+    let msg = document.getElementById("subMessage");
 
-<script src="/movie-booking/assets/js/app.js"></script>
-</body>
-</html>
+    if(email === ""){
+        msg.style.color = "orange";
+        msg.innerHTML = "Please enter your email!";
+    } else {
+        msg.style.color = "#4dff73";
+        msg.innerHTML = "Thank you for subscribing! 💌";
+    }
+}
+
+</script>
