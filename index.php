@@ -35,6 +35,15 @@ if($id > 0){
     $conn->query("UPDATE movies SET views = views + 1 WHERE id = $id");
 }
 
+// Fetch all upcoming shows
+$shows = $conn->query("
+    SELECT s.id, m.title, sc.screen_name, s.show_time, s.price
+    FROM shows s
+    JOIN movies m ON s.movie_id = m.id
+    JOIN screens sc ON s.screen_id = sc.id
+    WHERE s.show_time >= NOW()
+    ORDER BY s.show_time ASC
+");
 ?>
 
 <style>
@@ -169,6 +178,42 @@ body { font-family:Arial,sans-serif; background: linear-gradient(120deg, #443802
 .line-container h2 { display:inline-block; font-size:25px; color:hsla(91, 98%, 52%, 1); font-weight:bold; font-family:'Merriweather', Georgia, 'Times New Roman', serif; position:relative; padding-bottom:0px; text-shadow:1px 10px 4px hsla(101, 87%, 49%, 0.97); }
 .line-container h2 span { font-family:'Lato', 'Open Sans', 'Gill Sans', Calibri, sans-serif; color:rgba(247, 211, 9, 1); font-weight:bold; text-shadow:1px 8px 4px hsla(59, 93%, 40%, 0.97); }
 .line-container h2::after { content:""; position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:100%; height:2px; background:linear-gradient(90deg, #ff4d4d, #ff9933); border-radius:2px; }
+
+
+/* Horizontal row for show times */
+.show-row {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+    white-space: nowrap;
+}
+
+.show-row div {
+    display: inline-block;
+    padding: 8px 12px;
+    background: #1e40af;
+    color: #fff;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: default;
+    transition: background 0.2s;
+}
+
+.show-row div:hover {
+    background: #2563eb;
+}
+
+
+.show-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 16px;
+    color: #fff;
+}
+
 </style>
 
 <!-- News Ticker -->
@@ -214,6 +259,28 @@ function nextSlide(){ current=(current+1)%slides.length; showSlide(current); }
 setInterval(nextSlide,5000);
 showSlide(current);
 </script>
+
+<h3 style="
+    margin: 20px 0 8px 0;
+    color: #ffeb3b;
+    font-size: 22px;
+    font-weight: bold;
+    font-family: 'Merriweather', serif;
+">🎬 Movie Time</h3>
+
+<div class="show-row">
+    <?php if ($shows && $shows->num_rows > 0): ?>
+        <?php while ($row = $shows->fetch_assoc()): ?>
+            <div class="show-item">
+                <?= htmlspecialchars($row['title']) ?>  
+                <span style="color:#ffd700;">Time: </span>  
+                <?= date('h:i A', strtotime($row['show_time'])) ?>
+            </div>
+        <?php endwhile; ?>
+    <?php else: ?>
+        <div class="show-item">No shows available.</div>
+    <?php endif; ?>
+</div>
 
 <div class="line-container"><h2><span>Now Showing | Nepali | Hindi | English | Korean </span></h2></div>
 
