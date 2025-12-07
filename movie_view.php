@@ -3,6 +3,8 @@ require 'includes/db.php';
 require 'includes/header.php';
 $conn = db_connect();
 
+
+
 $id = (int)($_GET['id'] ?? 0);
 
 // Increment view count
@@ -48,6 +50,7 @@ $stmt->bind_param('i', $id);
 $stmt->execute();
 $shows = $stmt->get_result();
 ?>
+
 
 <style>
 /* ===== Reset & Base ===== */
@@ -270,18 +273,27 @@ h3 {
     
     <h3>Upcoming Shows</h3>
     <?php if($shows && $shows->num_rows > 0): ?>
-      <ul class="show-list">
-        <?php while($s = $shows->fetch_assoc()): ?>
-          <li>
-            <span>
-              <?=date('M j, Y H:i', strtotime($s['show_time'] ?? 'now'))?>
-              <?php if($screenExists) echo " — ".htmlspecialchars($s['screen_name'] ?? 'Unknown'); ?>
-              — Rs <?=htmlspecialchars($priceExists ? ($s['price'] ?? 0) : 0)?>
-            </span>
-            <a class="btn" href="book.php?show_id=<?= $s['id'] ?? 0 ?>">Book Now</a>
-          </li>
-        <?php endwhile; ?>
-      </ul>
+     <ul class="show-list">
+<?php while($s = $shows->fetch_assoc()): ?>
+    <li>
+        <span>
+            <?=date('M j, Y H:i', strtotime($s['show_time'] ?? 'now'))?>
+            <?php if($screenExists) echo " — ".htmlspecialchars($s['screen_name'] ?? 'Unknown'); ?>
+            — Rs <?=htmlspecialchars($priceExists ? ($s['price'] ?? 0) : 0)?>
+        </span>
+
+        <?php if(!isset($_SESSION['user_id'])): ?>
+            <!-- If NOT logged in -->
+            <a class="btn" href="login.php?redirect=book.php?show_id=<?= $s['id'] ?>">Book Now</a>
+        <?php else: ?>
+            <!-- If logged in -->
+            <a class="btn" href="book.php?show_id=<?= $s['id'] ?>">Book Now</a>
+        <?php endif; ?>
+
+    </li>
+<?php endwhile; ?>
+</ul>
+
     <?php else: ?>
       <p style="color:#6b7280;">No upcoming shows available.</p>
     <?php endif; ?>
