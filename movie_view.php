@@ -3,8 +3,6 @@ require 'includes/db.php';
 require 'includes/header.php';
 $conn = db_connect();
 
-
-
 $id = (int)($_GET['id'] ?? 0);
 
 // Increment view count
@@ -19,10 +17,9 @@ if(!$movie){
     exit; 
 }
 
-// Check if screens table exists
+// Check tables
 $screenExists = $conn->query("SHOW TABLES LIKE 'screens'")->num_rows > 0;
 
-// Check if shows table has 'price' column
 $priceExists = false;
 $columns = $conn->query("SHOW COLUMNS FROM shows")->fetch_all(MYSQLI_ASSOC);
 foreach($columns as $col){
@@ -51,9 +48,68 @@ $stmt->execute();
 $shows = $stmt->get_result();
 ?>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title><?=htmlspecialchars($movie['title'])?></title>
 
+<!-- 🔹 Timro existing CSS exactly yehi xa (unchanged) -->
 <style>
-/* ===== Reset & Base ===== */
+/* loader ko CSS timile yaha aafai halne */
+/* From Uiverse.io by Nawsome */ 
+.loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+}
+
+.slider {
+  overflow: hidden;
+  background-color: white;
+  margin: 0 15px;
+  height: 80px;
+  top: 250px;
+  width: 20px;
+  border-radius: 30px;
+  box-shadow: 15px 15px 20px rgba(0, 0, 0, 0.1), -15px -15px 30px #fff,
+    inset -5px -5px 10px rgba(0, 0, 255, 0.1),
+    inset 5px 5px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  border-radius: 100%;
+  box-shadow: inset 0px 0px 0px rgba(0, 0, 0, 0.3), 0px 420px 0 400px #2697f3,
+    inset 0px 0px 0px rgba(0, 0, 0, 0.1);
+  animation: animate_2 2.5s ease-in-out infinite;
+  animation-delay: calc(-0.5s * var(--i));
+}
+
+@keyframes animate_2 {
+  0% {
+    transform: translateY(250px);
+    filter: hue-rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(250px);
+    filter: hue-rotate(180deg);
+  }
+}
+
+
 /* ===== Reset & Base ===== */
 body {
   font-family: 'Poppins', sans-serif;
@@ -249,55 +305,98 @@ h3 {
 }
 
 </style>
+</head>
+
+<body>
+
+<!-- ================= LOADER ================= -->
+<section class="loader" id="page-loader">
+    <div class="slider" style="--i:0"></div>
+    <div class="slider" style="--i:1"></div>
+    <div class="slider" style="--i:2"></div>
+    <div class="slider" style="--i:3"></div>
+    <div class="slider" style="--i:4"></div>
+</section>
+<!-- =============== END LOADER =============== -->
+
+
+<!-- ================= PAGE CONTENT ================= -->
+<div id="page-content" style="display:none;">
 
 <div class="movie-detail">
+
   <div class="poster">
     <?php if(!empty($movie['poster'])): ?>
-      <img src="/Movie_Booking_Project_1/uploads/<?=htmlspecialchars($movie['poster'])?>" alt="<?=htmlspecialchars($movie['title'])?>">
+      <img src="/Movie_Booking_Project_1/uploads/<?=htmlspecialchars($movie['poster'])?>">
     <?php else: ?>
-      <img src="/Movie_Booking_Project_1/uploads/default.jpg" alt="No Poster">
+      <img src="/Movie_Booking_Project_1/uploads/default.jpg">
     <?php endif; ?>
   </div>
 
   <div class="info">
     <h2><?=htmlspecialchars($movie['title'])?></h2>
+
     <p><?=nl2br(htmlspecialchars($movie['description'] ?? 'No description available.'))?></p>
-    
-    <!-- Duration & Views -->
+
     <div class="movie-stats">
       <div>⏱ <?=htmlspecialchars($movie['duration'] ?? 'N/A')?> min</div>
       <div>👁 <?=intval($movie['views'] ?? 0)?> Views</div>
     </div>
-    
+
     <p><strong>Genre:</strong> <?=htmlspecialchars($movie['genre'] ?? 'N/A')?></p>
-    
+
     <h3>Upcoming Shows</h3>
+
     <?php if($shows && $shows->num_rows > 0): ?>
-     <ul class="show-list">
-<?php while($s = $shows->fetch_assoc()): ?>
-    <li>
+    <ul class="show-list">
+
+    <?php while($s = $shows->fetch_assoc()): ?>
+      <li>
         <span>
-            <?=date('M j, Y H:i', strtotime($s['show_time'] ?? 'now'))?>
-            <?php if($screenExists) echo " — ".htmlspecialchars($s['screen_name'] ?? 'Unknown'); ?>
-            — Rs <?=htmlspecialchars($priceExists ? ($s['price'] ?? 0) : 0)?>
+          <?=date('M j, Y H:i', strtotime($s['show_time']))?>
+          <?php if($screenExists): ?>
+            — <?=htmlspecialchars($s['screen_name'])?>
+          <?php endif; ?>
+          — Rs <?=htmlspecialchars($priceExists ? ($s['price'] ?? 0) : 0)?>
         </span>
 
         <?php if(!isset($_SESSION['user_id'])): ?>
-            <!-- If NOT logged in -->
-            <a class="btn" href="login.php?redirect=book.php?show_id=<?= $s['id'] ?>">Book Now</a>
+          <a class="btn" href="login.php?redirect=book.php?show_id=<?=$s['id']?>">Book Now</a>
         <?php else: ?>
-            <!-- If logged in -->
-            <a class="btn" href="book.php?show_id=<?= $s['id'] ?>">Book Now</a>
+          <a class="btn" href="book.php?show_id=<?=$s['id']?>">Book Now</a>
         <?php endif; ?>
+      </li>
+    <?php endwhile; ?>
 
-    </li>
-<?php endwhile; ?>
-</ul>
-
+    </ul>
     <?php else: ?>
       <p style="color:#6b7280;">No upcoming shows available.</p>
     <?php endif; ?>
+
   </div>
 </div>
 
 <?php require 'includes/footer.php'; ?>
+
+</div>
+<!-- =============== END PAGE CONTENT =============== -->
+
+
+<!-- ================= LOADER SCRIPT ================= -->
+<script>
+window.addEventListener("load", () => {
+    const loader = document.getElementById("page-loader");
+    const content = document.getElementById("page-content");
+
+    setTimeout(() => {
+        loader.style.opacity = "0";
+        setTimeout(() => {
+            loader.style.display = "none";
+            content.style.display = "block";
+        }, 500);
+    }, 800);
+});
+</script>
+
+</body>
+</html>

@@ -1,7 +1,10 @@
+
 <?php
 require 'includes/db.php';
 require 'includes/header.php';
 $conn = db_connect();
+
+/* ================= FETCH DATA ================= */
 
 // Fetch movies
 $movies = $conn->query("SELECT * FROM movies WHERE status='active' ORDER BY created_at DESC");
@@ -21,21 +24,20 @@ while($row = $slides_res->fetch_assoc()) {
     $slides[] = $row;
 }
 
-// Function to convert minutes to H:M
+// Duration helper
 function formatDuration($minutes) {
     $h = floor($minutes / 60);
     $m = $minutes % 60;
     return sprintf("%dh %02dm", $h, $m);
 }
 
-// Fetch $id from URL if available
+// Increment views
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
 if($id > 0){
     $conn->query("UPDATE movies SET views = views + 1 WHERE id = $id");
 }
 
-// Fetch all upcoming shows
+// Upcoming shows
 $shows = $conn->query("
     SELECT s.id, m.title, sc.screen_name, s.show_time, s.price
     FROM shows s
@@ -46,178 +48,52 @@ $shows = $conn->query("
 ");
 ?>
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="css_part/index.css">
 <style>
-* { box-sizing:border-box; margin:0; padding:0; }
-body { font-family:Arial,sans-serif; background: linear-gradient(120deg, #443802ff, rgba(119, 60, 1, 0.94),rgba(29, 27, 25, 0.99)); color:#fff; }
+  body { 
+  font-family:Arial,sans-serif; 
+ background:
+    linear-gradient(
+      rgba(26, 8, 8, 0.75),
+      rgba(0, 0, 0, 0.95)
+    ),
+    url("./imgs/7f2f2b740a523a0240c17fab4f7f9733.jpg");
+     background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+min-height: 100vh;
 
-/* News Ticker */
-.ticker-container { background:#ffe816; overflow:hidden; white-space:nowrap; padding:10px 0; font-weight:bold; }
-.ticker-text { display:inline-block; padding-left:100%; animation:ticker 20s linear infinite; color:#111; font-family: 'Merriweather', Georgia, 'Times New Roman', serif; }
-@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-
-/* Slider */
-.slider-container { position:relative; width:100%; max-width:1500px; overflow:hidden; border-radius:12px; box-shadow:0 8px 25px rgba(248, 22, 22, 0.88); }
-.slider-slide { position:relative; width:100%; height:500px; display:none; background-size:cover; background-position:center; }
-.slider-slide.active { display:block; }
-.slider-overlay { position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(24, 17, 17, 0.59); display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:0 20px; }
-.slider-overlay h2 { font-weight:700; color:#74f708ff; font-size:49px; margin-bottom:15px; text-shadow:2px 12px 15px #e2e9e2fc; font-family:'Merriweather', Georgia, 'Times New Roman', serif; }
-.slider-overlay p { font-weight:600; color:hsla(59, 98%, 51%, 0.99); font-size:25px; margin-bottom:20px; max-width:700px; text-shadow:1px 10px 4px hsla(0, 73%, 57%, 0.97); font-family:'Lato', 'Open Sans', 'Gill Sans', Calibri, sans-serif; }
-.slider-overlay a { display:inline-block; padding:12px 30px; background:#ff4c60; color:#fff; font-weight:bold; border-radius:6px; text-decoration:none; transition:0.3s; font-family:'Times New Roman'; }
-.slider-overlay a:hover { background:#ff1a3c; }
-.slider-dots { position:absolute; bottom:20px; width:100%; text-align:center; }
-.slider-dots span { display:inline-block; width:20px; height:4px; margin:0 6px; background: rgba(255,255,255,0.5); border-radius:20%; cursor:pointer; transition:0.3s; }
-.slider-dots span.active { background:#ff4c60; }
-
-/* Movie Cards */
-.movie-grid { 
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 22px;
-    max-width: 1220px;
-    margin: 60px auto;
-    padding: 0 15px;
-    /* height removed so grid auto adjusts */
-}
-
-.movie-card { background: linear-gradient(145deg, #85f369, #160c14, #f1620e); border-radius:15px; overflow:hidden; box-shadow:0px 10px 5px rgba(235, 24, 24, 0.97); transition: transform 0.3s, box-shadow 0.3s; position:relative; display:flex; flex-direction:column; cursor:pointer; }
-.movie-card:hover { transform:translateY(-10px) rotate(-1deg); box-shadow:0 35px 45px rgba(0,0,0,0.3); }
-.movie-card img { width:100%; height:260px; object-fit:cover; transition: transform 0.5s, filter 0.5s; }
-.movie-card:hover img { transform: scale(1.08) rotate(1deg); filter: brightness(1.15) contrast(1.1); }
-/* Movie Title with Glow & Pulse Animation */
-.movie-card h3 {
-    font-size: 1.3rem;
-    margin: 10px 15px 5px;
-    font-weight: 700;
-    text-align: center;
-    color: #93fd09ff;
-    text-shadow: 0px 2px 5px rgba(230, 222, 222, 0.7);
-    position: relative;
-    transition: color 0.5s, transform 0.3s, text-shadow 0.3s;
-    animation: glowPulse 2.5s infinite alternate;
-}
-
-/* Glow + Slight Movement Animation */
-@keyframes glowPulse {
-    0% {
-        color: #93fd09ff;
-        text-shadow: 0 0 5px rgba(147, 253, 9, 0.7), 0 0 10px rgba(147, 253, 9, 0.5);
-        transform: translateY(0px);
-    }
-    50% {
-        color: #f32c12ff;
-        text-shadow: 0 0 15px rgba(255, 255, 90, 0.9), 0 0 25px rgba(255, 255, 90, 0.6);
-        transform: translateY(-2px);
-    }
-    100% {
-        color: #93fd09ff;
-        text-shadow: 0 0 5px rgba(147, 253, 9, 0.7), 0 0 10px rgba(147, 253, 9, 0.5);
-        transform: translateY(0px);
-    }
-}
-
-/* Hover effect for extra pop */
-.movie-card:hover h3 {
-    color: #ffde59;
-    text-shadow: 0 0 20px #ffde59, 0 0 35px rgba(255, 222, 89, 0.7);
-    transform: translateY(-3px) scale(1.05);
-}
-
-
-/* Animated Language Text Only */
-.movie-card .language {
-    display: inline-block;
-    font-size: 0.95rem;
-    font-weight: bold;
-    color: #ffeb3b; /* bright yellow */
-    margin-bottom: 25px;
-    text-align: center;
-    text-shadow: 0 0 4px #ffeb3b, 0 0 8px #ffe600, 0 0 12px #fff700;
-    animation: glowFloat 2s infinite alternate ease-in-out;
-    cursor: default;
-}
-
-/* Glow + Floating Animation */
-@keyframes glowFloat {
-    0% {
-        transform: translateY(0) scale(1);
-        text-shadow: 0 0 4px #ffeb3b, 0 0 8px #ffe600, 0 0 12px #fff700;
-        color: #ffeb3b;
-    }
-    50% {
-        transform: translateY(-4px) scale(1.05);
-        text-shadow: 0 0 8px #ffeb3b, 0 0 16px #ffe600, 0 0 24px #fff700;
-        color: #fff;
-    }
-    100% {
-        transform: translateY(0) scale(1);
-        text-shadow: 0 0 4px #ffeb3b, 0 0 8px #ffe600, 0 0 12px #fff700;
-        color: #ffeb3b;
-    }
-}
-
-/* Optional: Hover effect for extra pop */
-.movie-card:hover .language {
-    transform: translateY(-2px) scale(1.1);
-    text-shadow: 0 0 12px #ffeb3b, 0 0 20px #fff700, 0 0 28px #ffe600;
-    color: #fff;
-}
-
-
-.movie-card .views { text-align:center; font-size:0.9rem; font-weight:bold; color:#fefefe; margin-bottom:8px; }
-.movie-card .btn { display:block; margin:10px 15px 15px 15px; padding:12px; background: linear-gradient(90deg,#2563eb,#1d4ed8); color:#fff; text-align:center; font-weight:600; border-radius:12px; text-decoration:none; transition: all 0.4s ease; position:relative; overflow:hidden; }
-.movie-card .btn:hover { background: linear-gradient(90deg,#1e40af,#3b82f6); transform:translateY(-3px) scale(1.03); box-shadow:0 10px 20px rgba(37,99,235,0.3); }
-.trailer-btn { position:absolute; bottom:-60px; left:50%; transform:translateX(-50%); background: rgba(252, 202, 41, 1); color: rgba(3, 3, 3, 1); width: 140px; font-weight:600; padding:12px 20px; border-radius:30px; text-decoration:none; opacity:0; transition: all 0.5s ease; display:flex; align-items:center; justify-content:center; }
-.movie-card:hover .trailer-btn { bottom:40%; opacity:1; transform: translateX(-50%) translateY(-10px); }
-.trailer-btn:hover { background:#ff1a3c; box-shadow:0 0 20px rgba(255,30,60,0.7); }
-.movie-card::before {  content:""; position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); z-index:0; transition: all 0.5s ease; border-radius:15px; }
-.movie-card:hover::before { background: linear-gradient(to top, rgba(0,0,0,0.3), transparent); }
-@media(max-width:768px){ .movie-card img { height:180px; } .movie-card h3 { font-size:1.1rem; } .trailer-btn { width:120px; font-size:0.85rem; padding:8px 15px; } }
-
-/* Title Line */
-.line-container { position: relative; width: 100%; text-align: center; margin:0px; }
-.line-container h2 { display:inline-block; font-size:25px; color:hsla(91, 98%, 52%, 1); font-weight:bold; font-family:'Merriweather', Georgia, 'Times New Roman', serif; position:relative; padding-bottom:0px; text-shadow:1px 10px 4px hsla(101, 87%, 49%, 0.97); }
-.line-container h2 span { font-family:'Lato', 'Open Sans', 'Gill Sans', Calibri, sans-serif; color:rgba(247, 211, 9, 1); font-weight:bold; text-shadow:1px 8px 4px hsla(59, 93%, 40%, 0.97); }
-.line-container h2::after { content:""; position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:100%; height:2px; background:linear-gradient(90deg, #ff4d4d, #ff9933); border-radius:2px; }
-
-
-/* Horizontal row for show times */
-.show-row {
-    display: flex;
-    gap: 15px;
-    overflow-x: auto;
-    padding: 10px 0;
-    border-bottom: 1px solid #ccc;
-    white-space: nowrap;
-}
-
-.show-row div {
-    display: inline-block;
-    padding: 8px 12px;
-    background: #1e40af;
-    color: #fff;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: default;
-    transition: background 0.2s;
-}
-
-.show-row div:hover {
-    background: #2563eb;
-}
-
-
-.show-item {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 16px;
-    color: #fff;
-}
+  color:#fff;
+ }
 
 </style>
+</head>
+<body>
+
+<div id="page-loader">
+	<div class="🤚">
+		<div class="👉"></div>
+		<div class="👉"></div>
+		<div class="👉"></div>
+		<div class="👉"></div>
+		<div class="🌴"></div>		
+		<div class="👍"></div>
+	</div>
+</div>
+<!-- ================= END LOADER ================= -->
+
+
+<!-- ================= PAGE CONTENT ================= -->
+<div id="page-content" style="display:none;">
 
 <!-- News Ticker -->
-<div class="ticker-container"><div class="ticker-text"><?=htmlspecialchars($news_text)?></div></div>
+<div class="ticker-container">
+    <div class="ticker-text"><?=htmlspecialchars($news_text)?></div>
+</div>
 
 <!-- Slider -->
 <div class="slider-container">
@@ -225,11 +101,13 @@ body { font-family:Arial,sans-serif; background: linear-gradient(120deg, #443802
     <div class="slider-slide" style="background-image:url('uploads/<?=htmlspecialchars($s['image_name'] ?? '')?>');">
         <div class="slider-overlay">
             <h2><?=htmlspecialchars($s['slide_text'] ?? '')?></h2>
-            <?php if(!empty($s['slide_paragraph'] ?? '')): ?>
+            <?php if(!empty($s['slide_paragraph'])): ?>
                 <p><?=htmlspecialchars($s['slide_paragraph'])?></p>
             <?php endif; ?>
-            <?php if(!empty($s['button_text'] ?? '') && !empty($s['button_link'] ?? '')): ?>
-                <a href="<?=htmlspecialchars($s['button_link'])?>" target="_blank"><?=htmlspecialchars($s['button_text'])?></a>
+            <?php if(!empty($s['button_text']) && !empty($s['button_link'])): ?>
+                <a href="<?=htmlspecialchars($s['button_link'])?>" target="_blank">
+                    <?=htmlspecialchars($s['button_text'])?>
+                </a>
             <?php endif; ?>
         </div>
     </div>
@@ -237,85 +115,107 @@ body { font-family:Arial,sans-serif; background: linear-gradient(120deg, #443802
     <div class="slider-dots"></div>
 </div>
 
-<script>
-let slides = document.querySelectorAll('.slider-slide');
-let dotsContainer = document.querySelector('.slider-dots');
-let current = 0;
-slides.forEach((s,i)=>{
-    let dot = document.createElement('span');
-    if(i===0) dot.classList.add('active');
-    dot.addEventListener('click',()=>{ goToSlide(i); });
-    dotsContainer.appendChild(dot);
-});
-function showSlide(index){
-    slides.forEach(s=>s.classList.remove('active'));
-    slides[index].classList.add('active');
-    let dots = document.querySelectorAll('.slider-dots span');
-    dots.forEach(d=>d.classList.remove('active'));
-    dots[index].classList.add('active');
-}
-function goToSlide(index){ current=index; showSlide(current); }
-function nextSlide(){ current=(current+1)%slides.length; showSlide(current); }
-setInterval(nextSlide,5000);
-showSlide(current);
-</script>
+<!-- Movie Time -->
+<h3 style="margin:20px 0;color:#ffeb3b;font-size:22px;font-weight:bold;">
+🎬 Movie Time
+</h3>
 
-<h3 style="
-    margin: 20px 0 8px 0;
-    color: #ffeb3b;
-    font-size: 22px;
-    font-weight: bold;
-    font-family: 'Merriweather', serif;
-">🎬 Movie Time</h3>
-
+<!-- Show Times -->
 <div class="show-row">
-    <?php if ($shows && $shows->num_rows > 0): ?>
-        <?php while ($row = $shows->fetch_assoc()): ?>
-            <div class="show-item">
-                <?= htmlspecialchars($row['title']) ?>  
-                <span style="color:#ffd700;">Time: </span>  
-                <?= date('h:i A', strtotime($row['show_time'])) ?>
-            </div>
-        <?php endwhile; ?>
-    <?php else: ?>
-        <div class="show-item">No shows available.</div>
-    <?php endif; ?>
+<?php if ($shows && $shows->num_rows > 0): ?>
+    <?php while ($row = $shows->fetch_assoc()): ?>
+        <div class="show-item">
+            <?= htmlspecialchars($row['title']) ?> —
+            <?= date('h:i A', strtotime($row['show_time'])) ?>
+        </div>
+    <?php endwhile; ?>
+<?php else: ?>
+    <div class="show-item">No shows available.</div>
+<?php endif; ?>
 </div>
 
-<div class="line-container"><h2><span>Now Showing | Nepali | Hindi | English | Korean </span></h2></div>
+<div class="line-container">
+    <h2><span>Now Showing | Nepali | Hindi | English | Korean</span></h2>
+</div>
 
-<!-- Movie Section -->
+<!-- Movie Grid -->
 <section class="movie-grid">
 <?php while($m = $movies->fetch_assoc()): ?>
-  <article class="movie-card">
-    <img src="/Movie_Booking_Project_1/uploads/<?=htmlspecialchars($m['poster'] ?: 'default.jpg')?>" alt="<?=htmlspecialchars($m['title'])?>">
-    
+<article class="movie-card">
+
+    <img src="/Movie_Booking_Project_1/uploads/<?=htmlspecialchars($m['poster'] ?: 'default.jpg')?>">
+
     <h3><?=htmlspecialchars($m['title'])?></h3>
 
-    <!-- Language -->
     <div class="language"><?=htmlspecialchars($m['language'] ?? 'N/A')?></div>
-    
-    <!-- Duration and Views Row -->
-    <div style="display:flex; justify-content:space-between; padding:0 15px; margin-bottom:10px; font-weight:bold; color:#fefefe; font-size:0.9rem;">
+
+    <div style="display:flex;justify-content:space-between;padding:0 15px;font-size:0.9rem;">
         <div>Time: <?=formatDuration($m['duration'])?></div>
-        <div>👁️ <?=intval($m['views'] ?? 0)?> Views</div>
+        <div>👁️ <?=intval($m['views'])?></div>
     </div>
 
-    <!-- Trailer Button -->
     <?php if(!empty($m['trailer'])): ?>
-      <a class="trailer-btn" href="<?=htmlspecialchars($m['trailer'])?>" target="_blank">Watch Trailer</a>
+        <a class="trailer-btn" href="<?=htmlspecialchars($m['trailer'])?>" target="_blank">
+            Watch Trailer
+        </a>
     <?php endif; ?>
 
-    <!-- View Show times with AJAX increment -->
-    <a class="btn" href="movie_view.php?id=<?=htmlspecialchars($m['id'])?>" onclick="incrementView(<?= $m['id'] ?>)">View Show times</a>
-  </article>
+    <a class="btn" href="movie_view.php?id=<?=$m['id']?>" onclick="incrementView(<?=$m['id']?>)">
+        View Show times
+    </a>
+
+</article>
 <?php endwhile; ?>
 </section>
 
+<?php require 'includes/footer.php'; ?>
+
+</div>
+
 <script>
-function incrementView(id){
-    fetch('increment_view.php?id=' + id);
+/* Slider */
+let slides = document.querySelectorAll('.slider-slide');
+let dotsContainer = document.querySelector('.slider-dots');
+let current = 0;
+
+slides.forEach((s,i)=>{
+    let dot = document.createElement('span');
+    if(i===0) dot.classList.add('active');
+    dot.onclick = ()=>goToSlide(i);
+    dotsContainer.appendChild(dot);
+});
+
+function showSlide(i){
+    slides.forEach(s=>s.classList.remove('active'));
+    slides[i].classList.add('active');
+    document.querySelectorAll('.slider-dots span')
+        .forEach(d=>d.classList.remove('active'));
+    dotsContainer.children[i].classList.add('active');
 }
+function goToSlide(i){ current=i; showSlide(current); }
+setInterval(()=>{ current=(current+1)%slides.length; showSlide(current); },5000);
+showSlide(0);
+
+/* Increment view milan */
+function incrementView(id){
+    fetch('increment_view.php?id='+id);
+}
+
+/* PAGE LOADER milan */
+window.addEventListener("load",()=>{
+    const loader=document.getElementById("page-loader");
+    const content=document.getElementById("page-content");
+
+    setTimeout(()=>{
+        loader.style.opacity="0";
+        setTimeout(()=>{
+            loader.style.display="none";
+            content.style.display="block";
+        },500);
+    },800);
+});
 </script>
 
-<?php require 'includes/footer.php'; ?>
+</body>
+</html>
+

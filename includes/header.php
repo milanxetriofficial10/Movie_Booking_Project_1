@@ -96,7 +96,7 @@ body{
   width:100%;
 }
 
-/* SEARCH BAR */
+/* search bar */
 .search-form{
   width:260px;
   

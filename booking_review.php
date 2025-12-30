@@ -171,13 +171,73 @@ button.modify-btn:hover {
     100% { opacity: 1; transform: scale(1);}
 }
 
+/* ===== Loader Styles ===== */
+.pl {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    display: none; /* hidden by default */
+}
+.pl__dot {
+    width: 12px;
+    height: 12px;
+    margin: 4px;
+    background: #2563eb;
+    border-radius: 50%;
+    display: inline-block;
+    animation: plDot 1.2s infinite ease-in-out both;
+}
+.pl__dot:nth-child(2){ animation-delay: 0.1s; }
+.pl__dot:nth-child(3){ animation-delay: 0.2s; }
+.pl__dot:nth-child(4){ animation-delay: 0.3s; }
+.pl__dot:nth-child(5){ animation-delay: 0.4s; }
+.pl__dot:nth-child(6){ animation-delay: 0.5s; }
+.pl__dot:nth-child(7){ animation-delay: 0.6s; }
+.pl__dot:nth-child(8){ animation-delay: 0.7s; }
+.pl__dot:nth-child(9){ animation-delay: 0.8s; }
+.pl__dot:nth-child(10){ animation-delay: 0.9s; }
+.pl__dot:nth-child(11){ animation-delay: 1s; }
+.pl__dot:nth-child(12){ animation-delay: 1.1s; }
+.pl__text {
+    margin-top: 15px;
+    font-size: 1.2rem;
+    color: #2563eb;
+}
+@keyframes plDot {
+    0%, 80%, 100% { transform: scale(0); } 
+    40% { transform: scale(1); }
+}
+
 /* Responsive */
 @media(max-width:600px){
     .review-card { padding: 20px; }
     .seat-list { justify-content: center; }
 }
-
 </style>
+
+<!-- Loader -->
+<div class="pl" id="loader">
+    <div class="pl__dot"></div>
+    <div class="pl__dot"></div>
+    <div class="pl__dot"></div>
+    <div class="pl__dot"></div>
+    <div class="pl__dot"></div>
+    <div class="pl__dot"></div>
+    <div class="pl__dot"></div>
+    <div class="pl__dot"></div>
+    <div class="pl__dot"></div>
+    <div class="pl__dot"></div>
+    <div class="pl__dot"></div>
+    <div class="pl__dot"></div>
+    <div class="pl__text">Loading…</div>
+</div>
 
 <div class="review-card">
     <h2>🎬 Review Booking</h2>
@@ -221,31 +281,6 @@ let seats = <?= $seats_json ?>;
 
 function updateTotal(){
     const price = <?= $show['price_amount'] ?>;
-    document.getElementById('total').textContent = seats.length * price;
-    document.getElementById('seats-input').value = JSON.stringify(seats);
-}
-
-// Handle remove seat buttons
-document.querySelectorAll('.remove-seat').forEach(btn=>{
-    btn.addEventListener('click', function(){
-        const li = this.parentElement;
-        const seat = li.getAttribute('data-seat');
-        seats = seats.filter(s => s !== seat);
-        li.remove();
-        updateTotal();
-    });
-});
-
-updateTotal();
-</script>
-
-<?php require 'includes/footer.php'; ?>
-<script>
-    // ===== Seat Remove & Total Animation =====
-let seats = <?= $seats_json ?>;
-
-function updateTotal(){
-    const price = <?= $show['price_amount'] ?>;
     const totalEl = document.getElementById('total');
     totalEl.textContent = seats.length * price;
     document.getElementById('seats-input').value = JSON.stringify(seats);
@@ -269,4 +304,13 @@ document.querySelectorAll('.remove-seat').forEach(btn=>{
 
 updateTotal();
 
+// ===== Loader =====
+const loader = document.getElementById('loader');
+const confirmForm = document.getElementById('confirm-form');
+
+confirmForm.addEventListener('submit', function(){
+    loader.style.display = 'flex';
+});
 </script>
+
+<?php require 'includes/footer.php'; ?>
