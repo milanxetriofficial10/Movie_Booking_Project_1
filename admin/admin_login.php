@@ -31,7 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
-<title>Admin Login</title>
+<title>CineMa Ghar - Admin Login</title>
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 <style>
 body { background:#f0f0f0; font-family:Arial; }
 .form-box {

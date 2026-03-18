@@ -1,4 +1,5 @@
 <?php
+session_start();
 require 'includes/db.php';
 require 'includes/header.php';
 require __DIR__ . '/vendor/autoload.php';
@@ -61,7 +62,7 @@ foreach ($seats as $seat) {
 }
 
 // ================= INSERT BOOKING =================
-$user_id = null;
+$user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
 
 $insert_stmt = $conn->prepare("
     INSERT INTO bookings 
@@ -88,88 +89,49 @@ if (!$insert_stmt->execute()) {
 }
 
 // ================= PDF GENERATE =================
-$mpdf = new Mpdf();
+$mpdf = new Mpdf(['tempDir' => __DIR__ . '/tmp']);
 
 $billHTML = "
 <div style='font-family: DejaVu Sans, sans-serif; max-width:420px; margin:auto; padding:20px; border:1px solid #ddd; border-radius:12px;'>
-
-    <!-- HEADER -->
     <div style='text-align:center;'>
         <img src='imgs/40b3a7667c57b37bb66735d67609798e-modified.png' 
              style='width:70px; margin-bottom:8px;' alt='CineMa Ghar Logo'>
         <h2 style='margin:0;'>CineMa Ghar</h2>
         <p style='margin:4px 0; color:#555;'>Movie Booking Receipt</p>
     </div>
-
-    <!-- TOP BAR -->
     <div style='height:4px; background:#3498db; margin:15px 0; border-radius:4px;'></div>
-
-    <!-- CUSTOMER INFO -->
     <table width='100%' cellpadding='6' cellspacing='0' style='font-size:13px;'>
-        <tr>
-            <td><strong>Name</strong></td>
-            <td style='text-align:right;'>{$user_name}</td>
-        </tr>
-        <tr style='background:#f7f7f7;'>
-            <td><strong>Email</strong></td>
-            <td style='text-align:right;'>{$user_email}</td>
-        </tr>
-        <tr>
-            <td><strong>Mobile</strong></td>
-            <td style='text-align:right;'>{$user_mobile}</td>
-        </tr>
+        <tr><td><strong>Name</strong></td><td style='text-align:right;'>{$user_name}</td></tr>
+        <tr style='background:#f7f7f7;'><td><strong>Email</strong></td><td style='text-align:right;'>{$user_email}</td></tr>
+        <tr><td><strong>Mobile</strong></td><td style='text-align:right;'>{$user_mobile}</td></tr>
     </table>
-
-    <!-- DETAILS BAR -->
     <div style='height:2px; background:#eee; margin:12px 0;'></div>
-
-    <!-- BOOKING DETAILS -->
     <table width='100%' cellpadding='6' cellspacing='0' style='font-size:13px;'>
-        <tr>
-            <td><strong>Seats</strong></td>
-            <td style='text-align:right;'>".implode(', ', $seats)."</td>
-        </tr>
-        <tr style='background:#f7f7f7;'>
-            <td><strong>Price / Seat</strong></td>
-            <td style='text-align:right;'>Rs {$price}</td>
-        </tr>
-        <tr>
-            <td><strong>Total Amount</strong></td>
-            <td style='text-align:right; font-weight:bold; color:#27ae60;'>
-                Rs {$total_price}
-            </td>
-        </tr>
-        <tr style='background:#f7f7f7;'>
-            <td><strong>Show Time</strong></td>
-            <td style='text-align:right;'>".date('M j, Y H:i', strtotime($showtime))."</td>
-        </tr>
+        <tr><td><strong>Seats</strong></td><td style='text-align:right;'>".implode(', ', $seats)."</td></tr>
+        <tr style='background:#f7f7f7;'><td><strong>Price / Seat</strong></td><td style='text-align:right;'>Rs {$price}</td></tr>
+        <tr><td><strong>Total Amount</strong></td><td style='text-align:right; font-weight:bold; color:#27ae60;'>Rs {$total_price}</td></tr>
+        <tr style='background:#f7f7f7;'><td><strong>Show Time</strong></td><td style='text-align:right;'>".date('M j, Y H:i', strtotime($showtime))."</td></tr>
     </table>
-
-    <!-- BOTTOM BAR -->
     <div style='height:4px; background:#27ae60; margin:15px 0; border-radius:4px;'></div>
-
-    <!-- FOOTER -->
     <p style='text-align:center; font-size:12px; color:#555; margin:0;'>
         Thank you for booking with <strong>CineMa Ghar</strong> ❤️<br>
         Enjoy your movie 🍿
     </p>
-
 </div>
 ";
-
 
 $mpdf->WriteHTML($billHTML);
 $pdfFileName = 'bill_' . time() . '.pdf';
 $pdfContent = $mpdf->Output($pdfFileName, 'S');
 
-// ================= EMAIL ONLY (NO SMS) =================
+// ================= EMAIL SEND =================
 $mail = new PHPMailer(true);
 try {
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
     $mail->Username = 'cinemaghar80@gmail.com';
-    $mail->Password = 'rywe isss qpnm rcxy';
+    $mail->Password = 'vudr dciy kmtw aqao';
     $mail->SMTPSecure = 'tls';
     $mail->Port = 587;
 
@@ -178,18 +140,9 @@ try {
 
     $mail->isHTML(true);
     $mail->Subject = "🎟️ Booking Confirmed - CineMa Ghar";
-
-    $mail->Body = "
-        Dear {$user_name},<br><br>
-        Your movie booking is <b>successfully confirmed</b>.<br>
-        Please find your ticket bill attached.<br><br>
-        Enjoy the show! 🍿<br>
-        <b>CineMa Ghar</b>
-    ";
-
+    $mail->Body = "Dear {$user_name},<br><br>Your movie booking is <b>successfully confirmed</b>.<br>Please find your ticket attached.<br><br>Enjoy the show! 🍿<br><b>CineMa Ghar</b>";
     $mail->addStringAttachment($pdfContent, $pdfFileName);
     $mail->send();
-
 } catch (Exception $e) {
     error_log("Email failed: " . $mail->ErrorInfo);
 }
@@ -210,6 +163,10 @@ echo "
     </a>
 </div>
 ";
+
+// ================= UPDATE HEADER LINK IMMEDIATELY =================
+$_SESSION['has_booking'] = true;
+
 ?>
 
 <?php require 'includes/footer.php'; ?>

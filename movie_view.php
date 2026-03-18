@@ -1,4 +1,5 @@
 <?php
+session_start();
 require 'includes/db.php';
 require 'includes/header.php';
 $conn = db_connect();
@@ -6,15 +7,32 @@ $conn = db_connect();
 $id = (int)($_GET['id'] ?? 0);
 
 // Increment view count
-if($id > 0){
+if ($id > 0) {
     $conn->query("UPDATE movies SET views = views + 1 WHERE id = $id");
 }
 
 // Fetch movie
 $movie = $conn->query("SELECT * FROM movies WHERE id=$id")->fetch_assoc();
-if(!$movie){ 
-    echo "<p style='text-align:center; font-size:1.2rem;'>Movie not found</p>"; 
-    exit; 
+if (!$movie) {
+    echo "<p style='text-align:center; font-size:1.2rem;'>Movie not found</p>";
+    exit;
+}
+
+/* ===== Convert Duration to Hour + Minute ===== */
+$durationFormatted = 'N/A';
+
+if (!empty($movie['duration']) && is_numeric($movie['duration'])) {
+    $totalMinutes = (int)$movie['duration'];
+    $hours = floor($totalMinutes / 60);
+    $minutes = $totalMinutes % 60;
+
+    if ($hours > 0 && $minutes > 0) {
+        $durationFormatted = $hours . 'h ' . $minutes . 'm';
+    } elseif ($hours > 0) {
+        $durationFormatted = $hours . 'h';
+    } else {
+        $durationFormatted = $minutes . 'm';
+    }
 }
 
 // Check tables
@@ -22,12 +40,12 @@ $screenExists = $conn->query("SHOW TABLES LIKE 'screens'")->num_rows > 0;
 
 $priceExists = false;
 $columns = $conn->query("SHOW COLUMNS FROM shows")->fetch_all(MYSQLI_ASSOC);
-foreach($columns as $col){
-    if($col['Field'] === 'price') $priceExists = true;
+foreach ($columns as $col) {
+    if ($col['Field'] === 'price') $priceExists = true;
 }
 
 // Fetch upcoming shows
-if($screenExists){
+if ($screenExists) {
     $stmt = $conn->prepare("
         SELECT s.*, sc.screen_name
         FROM shows s
@@ -43,6 +61,7 @@ if($screenExists){
         ORDER BY show_time ASC
     ");
 }
+
 $stmt->bind_param('i', $id);
 $stmt->execute();
 $shows = $stmt->get_result();
@@ -339,7 +358,7 @@ h3 {
     <p><?=nl2br(htmlspecialchars($movie['description'] ?? 'No description available.'))?></p>
 
     <div class="movie-stats">
-      <div>⏱ <?=htmlspecialchars($movie['duration'] ?? 'N/A')?> min</div>
+      <div>⏱ <?=htmlspecialchars($durationFormatted)?></div>
       <div>👁 <?=intval($movie['views'] ?? 0)?> Views</div>
     </div>
 
@@ -351,22 +370,27 @@ h3 {
     <ul class="show-list">
 
     <?php while($s = $shows->fetch_assoc()): ?>
-      <li>
-        <span>
-          <?=date('M j, Y H:i', strtotime($s['show_time']))?>
-          <?php if($screenExists): ?>
+<li>
+    <span>
+        <?=date('M j, Y h:i A', strtotime($s['show_time']))?>
+        <?php if($screenExists): ?>
             — <?=htmlspecialchars($s['screen_name'])?>
-          <?php endif; ?>
-          — Rs <?=htmlspecialchars($priceExists ? ($s['price'] ?? 0) : 0)?>
-        </span>
-
-        <?php if(!isset($_SESSION['user_id'])): ?>
-          <a class="btn" href="login.php?redirect=book.php?show_id=<?=$s['id']?>">Book Now</a>
-        <?php else: ?>
-          <a class="btn" href="book.php?show_id=<?=$s['id']?>">Book Now</a>
         <?php endif; ?>
-      </li>
-    <?php endwhile; ?>
+        — Rs <?=htmlspecialchars($priceExists ? ($s['price'] ?? 0) : 0)?>
+    </span>
+
+    <?php
+        $redirectUrl = "book.php?show_id=" . $s['id'];
+        $encodedRedirect = urlencode($redirectUrl);
+    ?>
+
+    <?php if(!isset($_SESSION['user_id'])): ?>
+        <a class="btn" href="login.php?redirect=<?=$encodedRedirect?>">Book Now</a>
+    <?php else: ?>
+        <a class="btn" href="<?=$redirectUrl?>">Book Now</a>
+    <?php endif; ?>
+</li>
+<?php endwhile; ?>
 
     </ul>
     <?php else: ?>
@@ -379,10 +403,8 @@ h3 {
 <?php require 'includes/footer.php'; ?>
 
 </div>
-<!-- =============== END PAGE CONTENT =============== -->
 
 
-<!-- ================= LOADER SCRIPT ================= -->
 <script>
 window.addEventListener("load", () => {
     const loader = document.getElementById("page-loader");

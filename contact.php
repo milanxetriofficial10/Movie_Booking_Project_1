@@ -3,128 +3,193 @@ require 'includes/header.php';
 require 'includes/db.php';
 $conn = db_connect();
 
-if(!isset($_SESSION['user_id'])){
-    header("Location: login.php");
-    exit;
-}
-
 $message = "";
 
 if($_SERVER["REQUEST_METHOD"] === "POST"){
     $full_name = $_POST['full_name'];
     $email     = $_POST['email'];
     $phone     = $_POST['phone'];
-
-    $user_id = $_SESSION['user_id'];
+    $user_id   = $_SESSION['user_id'];
 
     $stmt = $conn->prepare("INSERT INTO contact_info (user_id, full_name, email, phone) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("isss", $user_id, $full_name, $email, $phone);
 
     if($stmt->execute()){
-        $message = "✔ Contact information saved successfully!";
-    } else {
-        $message = "❌ Something went wrong. Try again.";
+        $message = "✨ Contact information saved successfully!";
+    }else{
+        $message = "⚠️ Something went wrong. Try again.";
     }
 }
 ?>
 
 <style>
-body{
-    margin:0;
-    padding:0;
-    font-family: Poppins, sans-serif;
-    background: linear-gradient(135deg,#0f172a,#1e293b,#0f172a);
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+/* ===== ONLY CONTACT PAGE SCOPE ===== */
+.contact-scope{
+    font-family:'Poppins',sans-serif;
+    background:radial-gradient(circle at top,#1e293b,#020617);
     color:#fff;
+    padding:60px 20px;
 }
 
-.contact-container{
-    max-width:600px;
-    margin:60px auto;
-    padding:30px;
+/* ===== Layout ===== */
+.contact-wrapper{
+    max-width:1100px;
+    margin:auto;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:30px;
+    animation:fadeUp 1s ease;
+}
+
+/* ===== Card ===== */
+.contact-card{
     background:rgba(255,255,255,0.08);
-    backdrop-filter:blur(6px);
-    border-radius:15px;
-    box-shadow:0 15px 40px rgba(0,0,0,0.4);
-    animation:fadeIn 1.3s ease;
+    backdrop-filter:blur(10px);
+    border-radius:20px;
+    box-shadow:0 20px 50px rgba(0,0,0,.6);
+    padding:35px;
+    position:relative;
+    overflow:hidden;
 }
 
-@keyframes fadeIn{
-    0%{opacity:0; transform:translateY(40px);}
-    100%{opacity:1; transform:translateY(0);}
+.contact-card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(120deg,transparent,rgba(255,255,255,.08),transparent);
+    animation:shine 6s linear infinite;
 }
 
-h2{
+/* ===== Headings ===== */
+.contact-card h2,
+.contact-card h3{
     text-align:center;
     margin-bottom:20px;
-    font-size:2rem;
-    background:linear-gradient(90deg,#38bdf8,#60a5fa);
-    -webkit-text-fill-color:transparent;
+    background:linear-gradient(90deg,#38bdf8,#818cf8);
     -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
 }
 
-label{
+/* ===== FORM ELEMENTS (SCOPED) ===== */
+.contact-scope label{
     font-weight:500;
 }
 
-input{
+.contact-scope input{
     width:100%;
-    padding:12px;
+    padding:13px;
     margin:10px 0 20px;
     border:none;
-    border-radius:10px;
-    background:#ffffff1a;
+    border-radius:12px;
+    background:rgba(255,255,255,.12);
     color:#fff;
     font-size:1rem;
+    transition:.3s;
 }
 
-input:focus{
-    outline:2px solid #38bdf8;
+.contact-scope input:focus{
+    outline:none;
+    box-shadow:0 0 0 2px rgba(56,189,248,.6);
+    background:rgba(255,255,255,.18);
 }
 
-button{
+.contact-scope button{
     width:100%;
-    padding:12px;
+    padding:14px;
+    border:none;
+    border-radius:14px;
     background:linear-gradient(90deg,#3b82f6,#2563eb);
     color:#fff;
-    border:none;
     font-size:1.1rem;
-    font-weight:bold;
-    border-radius:10px;
+    font-weight:700;
     cursor:pointer;
-    transition:0.3s;
+    transition:.4s;
 }
 
-button:hover{
-    transform:scale(1.05);
+.contact-scope button:hover{
+    transform:translateY(-3px);
+    box-shadow:0 15px 35px rgba(59,130,246,.6);
 }
 
-.message{
+/* ===== Message ===== */
+.contact-message{
     text-align:center;
     margin-bottom:15px;
     font-size:1rem;
-    color:#a5f3fc;
+    color:#7dd3fc;
+    animation:pulse .8s ease;
+}
+
+/* ===== Map ===== */
+.map-frame{
+    width:100%;
+    height:360px;
+    border:none;
+    border-radius:14px;
+    filter:grayscale(15%) contrast(1.1);
+}
+
+/* ===== Animations ===== */
+@keyframes fadeUp{
+    from{opacity:0;transform:translateY(40px);}
+    to{opacity:1;transform:none;}
+}
+@keyframes pulse{
+    0%{transform:scale(.96);}
+    50%{transform:scale(1.02);}
+    100%{transform:scale(1);}
+}
+@keyframes shine{
+    0%{transform:translateX(-100%);}
+    100%{transform:translateX(100%);}
+}
+
+/* ===== Responsive ===== */
+@media(max-width:900px){
+    .contact-wrapper{
+        grid-template-columns:1fr;
+    }
 }
 </style>
 
-<div class="contact-container">
-    <h2>Contact Information</h2>
+<div class="contact-scope">
+    <div class="contact-wrapper">
 
-    <?php if(!empty($message)): ?>
-        <p class="message"><?= $message ?></p>
-    <?php endif; ?>
+        <!-- ===== Contact Form ===== -->
+        <div class="contact-card">
+            <h2>Contact Information</h2>
 
-    <form method="POST">
-        <label>Full Name</label>
-        <input type="text" name="full_name" placeholder="Enter your full name" required>
+            <?php if($message): ?>
+                <div class="contact-message"><?= htmlspecialchars($message) ?></div>
+            <?php endif; ?>
 
-        <label>Email</label>
-        <input type="email" name="email" placeholder="Enter your email" required>
+            <form method="POST">
+                <label>Full Name</label>
+                <input type="text" name="full_name" required>
 
-        <label>Phone Number</label>
-        <input type="text" name="phone" placeholder="98XXXXXXXX" required>
+                <label>Email</label>
+                <input type="email" name="email" required>
 
-        <button type="submit">Save Contact Info</button>
-    </form>
+                <label>Phone Number</label>
+                <input type="text" name="phone" required>
+
+                <button type="submit">Save Contact Info</button>
+            </form>
+        </div>
+
+        <!-- ===== Map ===== -->
+        <div class="contact-card">
+            <h3>📍 Pashupati Multiple Campus</h3>
+            <iframe 
+                class="map-frame"
+                src="https://www.google.com/maps?q=Pashupati%20Multiple%20Campus%20Kathmandu&output=embed"
+                loading="lazy">
+            </iframe>
+        </div>
+
+    </div>
 </div>
 
 <?php require 'includes/footer.php'; ?>

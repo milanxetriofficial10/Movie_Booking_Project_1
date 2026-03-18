@@ -2,6 +2,7 @@
     "require": {
         "phpmailer/phpmailer": "^7.0",
         "twilio/sdk": "^8.8",
-        "mpdf/mpdf": "^8.2"
+        "mpdf/mpdf": "^8.2",
+        "google/apiclient": "^2.19"
     }
 }

@@ -7,61 +7,91 @@ if ($conn->connect_error) {
     die("Database Connection Failed: " . $conn->connect_error);
 }
 
-// Get form data
-$first    = trim($_POST['first_name']);
-$last     = trim($_POST['last_name']);
-$email    = trim($_POST['email']);
-$contact  = trim($_POST['contact']);   // Contact added
-$password = trim($_POST['password']);
-$confirm  = trim($_POST['confirm_password']);
+// Get form data safely
+$first    = trim($_POST['first_name'] ?? '');
+$last     = trim($_POST['last_name'] ?? '');
+$email    = trim($_POST['email'] ?? '');
+$contact  = trim($_POST['contact'] ?? '');
+$password = trim($_POST['password'] ?? '');
+$confirm  = trim($_POST['confirm_password'] ?? '');
 
-// Initialize errors array
+// Error array
 $errors = [];
 
-// Password confirmation check
+// Basic empty check
+if ($first === '' || $last === '' || $email === '' || $contact === '' || $password === '' || $confirm === '') {
+    $errors[] = "All fields are required!";
+}
+
+// Email validation
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $errors[] = "Invalid email format!";
+}
+
+// Password match check
 if ($password !== $confirm) {
     $errors[] = "Passwords do not match!";
 }
 
-// Password validation rules
-if (strlen($password) < 10) {
-    $errors[] = "Password must be at least 10 characters.";
+// 🔐 PASSWORD RULES
+
+// Length (10–15)
+if (strlen($password) < 10 || strlen($password) > 15) {
+    $errors[] = "Password must be between 10 and 15 characters.";
 }
-if (!preg_match('/\d/', $password)) {
-    $errors[] = "Password must contain at least one number.";
+
+// At least 2 numbers
+if (preg_match_all('/\d/', $password) < 2) {
+    $errors[] = "Password must contain at least 2 numbers.";
 }
-if (!preg_match('/[*#]/', $password)) {
-    $errors[] = "Password must contain at least one * or #.";
+
+// Must contain # or @
+if (!preg_match('/[#@]/', $password)) {
+    $errors[] = "Password must contain at least one # or @.";
 }
+
+// First letter capital
 if (!preg_match('/^[A-Z]/', $password)) {
     $errors[] = "Password must start with a capital letter.";
 }
 
-// If there are any errors, display them and stop
-if (count($errors) > 0) {
+// Check if email already exists
+$check = $conn->prepare("SELECT id FROM users WHERE email = ?");
+$check->bind_param("s", $email);
+$check->execute();
+$result = $check->get_result();
+
+if ($result->num_rows > 0) {
+    $errors[] = "Email already registered!";
+}
+
+// If errors exist → show
+if (!empty($errors)) {
     foreach ($errors as $err) {
-        echo "<p style='color:red;'>$err</p>";
+        echo "<p style='color:red; text-align:center;'>$err</p>";
     }
+    echo "<p style='text-align:center;'><a href='signup.php'>Go Back</a></p>";
     exit;
 }
 
-// Hash the password
+// Hash password
 $hashed = password_hash($password, PASSWORD_DEFAULT);
 
-// Insert into DB
-$sql = "INSERT INTO users (first_name, last_name, email, contact, password) VALUES (?, ?, ?, ?, ?)";
-$stmt = $conn->prepare($sql);
+// Insert user
+$stmt = $conn->prepare("INSERT INTO users (first_name, last_name, email, contact, password) VALUES (?, ?, ?, ?, ?)");
 $stmt->bind_param("sssss", $first, $last, $email, $contact, $hashed);
 
 if ($stmt->execute()) {
-    // Set session
+
+    // Session set
     $_SESSION['user_id'] = $stmt->insert_id;
     $_SESSION['first_name'] = $first;
 
-    // Redirect to index
+    // Redirect
     header("Location: index.php");
     exit();
+
 } else {
-    echo "Error: " . $stmt->error;
+    echo "<p style='color:red;'>Error: " . $stmt->error . "</p>";
 }
 ?>
