@@ -19,261 +19,348 @@ if(!$show_id || !$seats || !$user_name) {
     echo "<p>Invalid booking data.</p>"; exit;
 }
 
-// Fetch show info and movie poster
+// Fetch show details with movie and screen info
 $show = $conn->query("
-    SELECT s.*, m.title, m.poster, COALESCE(s.price,350) AS price_amount
+    SELECT s.*, m.title, m.poster, m.genre, m.duration, m.language,
+           sc.screen_name,
+           COALESCE(s.price, 350) AS price_amount
     FROM shows s
-    JOIN movies m ON s.movie_id=m.id
-    WHERE s.id=$show_id
+    JOIN movies m ON s.movie_id = m.id
+    JOIN screens sc ON s.screen_id = sc.id
+    WHERE s.id = $show_id
 ")->fetch_assoc();
 
 if(!$show){ echo "<p>Show not found</p>"; exit; }
 
 $total = count($seats) * $show['price_amount'];
 $seats_json = json_encode($seats);
+
+// Format show time if available
+$show_time = date('d M Y, h:i A', strtotime($show['show_date'] . ' ' . $show['show_time']));
 ?>
 
 <style>
-/* ===== Base Styles ===== */
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(135deg,#e0f2fe,#f0f9ff);
-  color: #1f2937;
+      background:
+        linear-gradient(rgba(26, 8, 8, 0.88), rgba(0, 0, 0, 0.95)),
+        url("https://i.pinimg.com/736x/a1/25/d3/a125d3d8481542af812611c5eb23ee18.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
 }
 
-/* ===== Review Card ===== */
+/* CARD */
 .review-card {
-    max-width: 700px;
-    margin: 30px auto;
-    padding: 30px 25px;
-    border-radius: 15px;
-    background: #fff;
-    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+    max-width: 10000px;
+    margin: 10px auto;
+    padding: 25px;
+    border-radius: 16px;
+   
+}
+
+.review-content {
+    display: flex;
+    gap: 30px;
+}
+
+/* LEFT IMAGE - PERFECT POSTER STYLE */
+.poster-box {
+    width: 260px;
+}
+
+.poster-box img {
+    width: 100%;
+    height: 480px; /* fixed poster height */
+    object-fit: cover; /* no stretch */
+    border-radius: 10px; /* small smooth corner (not round) */
+    
+
+    transition: all 0.4s ease;
+}
+
+/* HOVER EFFECT */
+.poster-box img:hover {
+    transform: scale(1.04) rotate(0.5deg);
+    box-shadow: 
+        0 20px 40px rgba(0,0,0,0.35),
+        0 0 0 3px #fff inset;
+}
+.poster-box {
     position: relative;
-    overflow: hidden;
-    animation: cardFadeIn 0.8s ease forwards;
 }
 
-/* Heading */
-.review-card h2 {
-    text-align: center;
-    color: #1e3a8a;
-    margin-bottom: 25px;
-    font-size: 2rem;
-    animation: fadeUp 0.6s ease forwards;
-}
-
-/* Movie Poster */
-.review-card img.poster {
-    display: block;
-    margin: 0 auto 25px;
-    max-width: 240px;
+.poster-box::after {
+    content: "";
+    position: absolute;
+    inset: 0;
     border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-    transform: scale(0.95);
-    transition: transform 0.4s ease, box-shadow 0.3s ease;
+    background: linear-gradient(to top, rgba(0,0,0,0.2), transparent);
+    pointer-events: none;
 }
-.review-card img.poster:hover {
-    transform: scale(1.05) rotate(1deg);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.2);
-}
-
-/* Info Text */
-.review-card p {
-    font-size: 1rem;
-    margin-bottom: 14px;
-    color: #374151;
-    line-height: 1.5;
+/* RIGHT DETAILS */
+.details-box {
+    flex: 1;
 }
 
-/* Seats List */
+/* Info grid */
+.movie-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-item .label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #f9fafc;
+    letter-spacing: 0.5px;
+}
+
+.info-item .value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: rgb(249, 250, 252);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.info-item .value i {
+    color: #f9a516;
+    width: 20px;
+}
+
 .seat-list {
-    list-style: none;
-    padding-left: 0;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 20px;
-    transition: all 0.3s ease;
+    list-style: none;
+    padding: 0;
+    margin: 15px 0;
 }
+
 .seat-list li {
-    background: #e5e7eb;
-    padding: 8px 14px;
-    border-radius: 8px;
+    background: #2563eb;
+    padding: 6px 12px;
+    border-radius: 30px;
     font-weight: 500;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    cursor: default;
-    position: relative;
-    animation: seatFadeIn 0.6s ease forwards;
+    gap: 6px;
 }
-.seat-list li:nth-child(even) { animation-delay: 0.2s; }
-.seat-list li:nth-child(odd) { animation-delay: 0.4s; }
 
-/* Delete Button */
-.seat-list li button.remove-seat {
-    margin-left: 8px;
-    padding: 3px 8px;
-    background: #f87171;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.3s ease;
-}
-.seat-list li button.remove-seat:hover {
+.remove-seat {
     background: #ef4444;
-    transform: scale(1.1);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Buttons */
-button.confirm-btn, button.modify-btn {
+.remove-seat:hover {
+    background: #dc2626;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: transparent;
+    padding: 15px 20px;
+    border-radius: 50px;
+    margin: 20px 0;
+    font-weight: 600;
+}
+
+.total-text {
+    font-size: 1.1rem;
+    color: #67ff38;
+}
+
+.total-amount {
+    font-size: 1.8rem;
+    color: #0afb0e;
+}
+
+/* BUTTONS */
+.confirm-btn, .modify-btn {
     width: 100%;
-    padding: 12px;
-    margin-top: 12px;
+    padding: 14px;
     border: none;
-    border-radius: 8px;
+    border-radius: 50px;
+    font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    color: #fff;
-    transition: all 0.3s ease;
-}
-button.confirm-btn {
-    background: linear-gradient(90deg,#2563eb,#1d4ed8);
-}
-button.confirm-btn:hover {
-    background: linear-gradient(90deg,#1e40af,#1d4ed8);
-    transform: scale(1.03);
-    box-shadow: 0 8px 20px rgba(37,99,235,0.5);
-}
-button.modify-btn {
-    background: linear-gradient(90deg,#f87171,#ef4444);
-}
-button.modify-btn:hover {
-    transform: scale(1.03);
-    box-shadow: 0 8px 20px rgba(248,113,113,0.5);
+    transition: all 0.2s;
+    margin-top: 10px;
 }
 
-/* ===== Animations ===== */
-@keyframes cardFadeIn {
-    0% { opacity: 0; transform: translateY(30px);}
-    100% { opacity: 1; transform: translateY(0);}
+.confirm-btn {
+    background: transparent;
+    border: 2px solid #2563eb;
+    color: white;
 }
 
-@keyframes fadeUp {
-    0% { opacity: 0; transform: translateY(20px);}
-    100% { opacity: 1; transform: translateY(0);}
+.confirm-btn:hover {
+    background: #1d4ed8;
+    transform: scale(1.02);
 }
 
-@keyframes seatFadeIn {
-    0% { opacity: 0; transform: scale(0.8);}
-    100% { opacity: 1; transform: scale(1);}
+.modify-btn {
+    background: transparent;
+    color: #fafbfc;
+    border: 1px solid #cbd5e1;
 }
 
-/* ===== Loader Styles ===== */
-.pl {
+.modify-btn:hover {
+    background: #e2e8f0;
+}
+
+/* LOADER */
+.loader {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255,255,255,0.9);
-    display: flex;
-    flex-direction: column;
+    inset: 0;
+    background: rgba(255,255,255,0.95);
+    display: none;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     z-index: 9999;
-    display: none; /* hidden by default */
-}
-.pl__dot {
-    width: 12px;
-    height: 12px;
-    margin: 4px;
-    background: #2563eb;
-    border-radius: 50%;
-    display: inline-block;
-    animation: plDot 1.2s infinite ease-in-out both;
-}
-.pl__dot:nth-child(2){ animation-delay: 0.1s; }
-.pl__dot:nth-child(3){ animation-delay: 0.2s; }
-.pl__dot:nth-child(4){ animation-delay: 0.3s; }
-.pl__dot:nth-child(5){ animation-delay: 0.4s; }
-.pl__dot:nth-child(6){ animation-delay: 0.5s; }
-.pl__dot:nth-child(7){ animation-delay: 0.6s; }
-.pl__dot:nth-child(8){ animation-delay: 0.7s; }
-.pl__dot:nth-child(9){ animation-delay: 0.8s; }
-.pl__dot:nth-child(10){ animation-delay: 0.9s; }
-.pl__dot:nth-child(11){ animation-delay: 1s; }
-.pl__dot:nth-child(12){ animation-delay: 1.1s; }
-.pl__text {
-    margin-top: 15px;
-    font-size: 1.2rem;
-    color: #2563eb;
-}
-@keyframes plDot {
-    0%, 80%, 100% { transform: scale(0); } 
-    40% { transform: scale(1); }
 }
 
-/* Responsive */
-@media(max-width:600px){
-    .review-card { padding: 20px; }
-    .seat-list { justify-content: center; }
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #ddd;
+    border-top: 5px solid #2563eb;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loader p {
+    margin-top: 12px;
+    color: #2563eb;
+    font-weight: 500;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* MOBILE */
+@media(max-width:768px){
+    .review-content {
+        flex-direction: column;
+        align-items: center;
+    }
+    .poster-box img {
+        width: 200px;
+    }
 }
 </style>
 
-<!-- Loader -->
-<div class="pl" id="loader">
-    <div class="pl__dot"></div>
-    <div class="pl__dot"></div>
-    <div class="pl__dot"></div>
-    <div class="pl__dot"></div>
-    <div class="pl__dot"></div>
-    <div class="pl__dot"></div>
-    <div class="pl__dot"></div>
-    <div class="pl__dot"></div>
-    <div class="pl__dot"></div>
-    <div class="pl__dot"></div>
-    <div class="pl__dot"></div>
-    <div class="pl__dot"></div>
-    <div class="pl__text">Loading…</div>
+<!-- LOADER -->
+<div class="loader" id="loader">
+    <div class="spinner"></div>
+    <p>Processing your booking...</p>
 </div>
 
 <div class="review-card">
-    <h2>🎬 Review Booking</h2>
+    <h2 style="text-align:center; margin-bottom:20px;">🎬 Review Your Booking</h2>
 
-    <?php if(!empty($show['poster'])): ?>
-        <img class="poster" src="/Movie_Booking_Project_1/uploads/<?=htmlspecialchars($show['poster'])?>" 
-             alt="<?=htmlspecialchars($show['title'])?>">
-    <?php endif; ?>
+    <div class="review-content">
+        <!-- LEFT POSTER -->
+        <div class="poster-box">
+            <?php if(!empty($show['poster'])): ?>
+                <img src="/Movie_Booking_Project_1/uploads/<?=htmlspecialchars($show['poster'])?>" alt="<?=htmlspecialchars($show['title'])?>">
+            <?php endif; ?>
+        </div>
 
-    <p><strong>Movie:</strong> <?=htmlspecialchars($show['title'])?></p>
-    <p><strong>Price per Seat:</strong> Rs <?=$show['price_amount']?></p>
-    <p><strong>Total:</strong> Rs <span id="total"><?= $total ?></span></p>
+        <!-- RIGHT DETAILS -->
+        <div class="details-box">
+            <!-- Dynamic info grid -->
+            <div class="movie-info-grid">
+                <div class="info-item">
+                    <span class="label">Movie</span>
+                    <span class="value"><?=htmlspecialchars($show['title'])?></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Screen</span>
+                    <span class="value"><i class="fas fa-video"></i> <?=htmlspecialchars($show['screen_name'])?></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Genre</span>
+                    <span class="value"><i class="fas fa-tag"></i> <?=htmlspecialchars($show['genre'])?></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Language</span>
+                    <span class="value"><i class="fas fa-globe"></i> <?=htmlspecialchars($show['language'])?></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Duration</span>
+                    <span class="value"><i class="fas fa-clock"></i> <?=htmlspecialchars($show['duration'])?></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Show Time</span>
+                    <span class="value"><i class="fas fa-calendar-alt"></i> <?=htmlspecialchars($show_time)?></span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Price per seat</span>
+                    <span class="value"><i class="fas fa-coins"></i> Rs <?=$show['price_amount']?></span>
+                </div>
+            </div>
 
-    <h3>Selected Seats:</h3>
-    <ul id="seat-list" class="seat-list">
-        <?php foreach($seats as $seat): ?>
-            <li data-seat="<?=htmlspecialchars($seat)?>">
-                <?=htmlspecialchars($seat)?> 
-                <button type="button" class="remove-seat">Delete</button>
-            </li>
-        <?php endforeach; ?>
-    </ul>
+            <!-- Selected seats section -->
+            <h3 style="margin-bottom:10px;">Selected Seats</h3>
+            <ul id="seat-list" class="seat-list">
+                <?php foreach($seats as $seat): ?>
+                    <li data-seat="<?=htmlspecialchars($seat)?>">
+                        <?=htmlspecialchars($seat)?>
+                        <button type="button" class="remove-seat">×</button>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
 
-    <form id="confirm-form" method="post" action="booking_confirm.php">
-        <input type="hidden" name="show_id" value="<?=$show_id?>">
-        <input type="hidden" name="seats" id="seats-input" value='<?=$seats_json?>'>
-        <input type="hidden" name="user_name" value="<?=htmlspecialchars($user_name)?>">
-        <input type="hidden" name="user_email" value="<?=htmlspecialchars($user_email)?>">
-        <input type="hidden" name="user_mobile" value="<?=htmlspecialchars($user_mobile)?>">
-        <button type="submit" class="confirm-btn">Confirm Booking</button>
-    </form>
+            <!-- Total amount -->
+            <div class="total-row">
+                <span class="total-text">Total Amount</span>
+                <span class="total-amount" id="total">Rs <?= $total ?></span>
+            </div>
 
-    <form method="get" action="book.php">
-        <input type="hidden" name="show_id" value="<?=$show_id?>">
-        <button type="submit" class="modify-btn">Modify Selection</button>
-    </form>
+            <!-- Confirm form -->
+            <form id="confirm-form" method="post" action="booking_confirm.php">
+                <input type="hidden" name="show_id" value="<?=$show_id?>">
+                <input type="hidden" name="seats" id="seats-input" value='<?=$seats_json?>'>
+                <input type="hidden" name="user_name" value="<?=htmlspecialchars($user_name)?>">
+                <input type="hidden" name="user_email" value="<?=htmlspecialchars($user_email)?>">
+                <input type="hidden" name="user_mobile" value="<?=htmlspecialchars($user_mobile)?>">
+                <button type="submit" class="confirm-btn">Confirm Booking</button>
+            </form>
+
+            <!-- Modify button (go back to seat selection) -->
+            <form method="get" action="book.php">
+                <input type="hidden" name="show_id" value="<?=$show_id?>">
+                <button type="submit" class="modify-btn">Modify Seats</button>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -281,35 +368,24 @@ let seats = <?= $seats_json ?>;
 
 function updateTotal(){
     const price = <?= $show['price_amount'] ?>;
-    const totalEl = document.getElementById('total');
-    totalEl.textContent = seats.length * price;
+    document.getElementById('total').innerText = 'Rs ' + (seats.length * price);
     document.getElementById('seats-input').value = JSON.stringify(seats);
-    totalEl.style.transform = 'scale(1.2)';
-    setTimeout(()=> totalEl.style.transform = 'scale(1)',200);
 }
 
-// Remove seat with fade-out animation
+// Remove seat functionality
 document.querySelectorAll('.remove-seat').forEach(btn=>{
     btn.addEventListener('click', function(){
         const li = this.parentElement;
-        li.style.transition = 'all 0.3s ease';
-        li.style.opacity = 0;
-        li.style.transform = 'scale(0.7)';
-        setTimeout(()=> li.remove(), 300);
         const seat = li.getAttribute('data-seat');
+        li.remove();
         seats = seats.filter(s => s !== seat);
-        setTimeout(updateTotal, 300);
+        updateTotal();
     });
 });
 
-updateTotal();
-
-// ===== Loader =====
-const loader = document.getElementById('loader');
-const confirmForm = document.getElementById('confirm-form');
-
-confirmForm.addEventListener('submit', function(){
-    loader.style.display = 'flex';
+// Show loader on confirm submit
+document.getElementById('confirm-form').addEventListener('submit', function(){
+    document.getElementById('loader').style.display = 'flex';
 });
 </script>
 

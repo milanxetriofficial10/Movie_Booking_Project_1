@@ -75,8 +75,6 @@ $shows = $stmt->get_result();
 
 <!-- 🔹 Timro existing CSS exactly yehi xa (unchanged) -->
 <style>
-/* loader ko CSS timile yaha aafai halne */
-/* From Uiverse.io by Nawsome */ 
 .loader {
   display: flex;
   align-items: center;
@@ -132,7 +130,13 @@ $shows = $stmt->get_result();
 /* ===== Reset & Base ===== */
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(120deg, #0f172a, #1e293b, #0f172a);
+  background:
+        linear-gradient(rgba(26, 8, 8, 0.58), rgba(0, 0, 0, 0.95)),
+        url("https://i.pinimg.com/736x/a1/25/d3/a125d3d8481542af812611c5eb23ee18.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
   color: #f8fafc;
   margin: 0;
   padding: 0;
@@ -140,10 +144,7 @@ body {
   animation: fadeBg 10s infinite alternate ease-in-out;
 }
 
-@keyframes fadeBg {
-  0% { background: linear-gradient(120deg, #0f172a, #1e293b); }
-  100% { background: linear-gradient(120deg, #1e293b, #111827); }
-}
+
 
 a { text-decoration: none; transition: all 0.3s ease; }
 h2,h3 { margin: 0; font-weight: 600; }

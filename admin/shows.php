@@ -1,63 +1,89 @@
 <?php
-// admin/shows.php
+session_start();
 require_once '../includes/db.php';
-$conn = db_connect();
-$msg = '';
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 
-// Fetch movies and screens
-$movies  = $conn->query("SELECT id, title FROM movies WHERE status='active' ORDER BY title ASC");
-$screens = $conn->query("SELECT id, screen_name FROM screens ORDER BY screen_name ASC");
-
-// Add show
-if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_show'])){
-    $movie_id  = (int)$_POST['movie_id'];
-    $screen_id = (int)$_POST['screen_id'];
-    $show_time = $_POST['show_time']; // yyyy-mm-ddThh:mm
-
-    $show_time_mysql = date('Y-m-d H:i:s', strtotime($show_time));
-
-    $price_column_exists = $conn->query("SHOW COLUMNS FROM shows LIKE 'price'")->num_rows > 0;
-    $price = 0;
-    if ($price_column_exists) {
-        $price = (float)$_POST['price'];
-        $stmt = $conn->prepare("INSERT INTO shows (movie_id, screen_id, show_time, price) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param('iisd', $movie_id, $screen_id, $show_time_mysql, $price);
-    } else {
-        $stmt = $conn->prepare("INSERT INTO shows (movie_id, screen_id, show_time) VALUES (?, ?, ?)");
-        $stmt->bind_param('iis', $movie_id, $screen_id, $show_time_mysql);
-    }
-
-    if($stmt->execute()) $msg = "🎉 Show scheduled successfully.";
-    else $msg = "⚠️ Error: " . $stmt->error;
-}
-
-// Delete show
-if(isset($_GET['delete'])){
-    $id = (int)$_GET['delete'];
-    $conn->query("DELETE FROM shows WHERE id=$id");
-    header('Location: shows.php'); 
+if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
+    header("Location: admin_login.php");
     exit;
 }
 
-// Fetch all shows dynamically
-$show_columns = $conn->query("SHOW COLUMNS FROM shows")->fetch_all(MYSQLI_ASSOC);
-$has_price = false;
-foreach($show_columns as $col){
-    if($col['Field'] == 'price') $has_price = true;
+$conn = db_connect();
+$msg = "";
+
+/* ================= FETCH MOVIES & SCREENS ================= */
+
+// IMPORTANT: status हटाइयो ताकि सबै movie देखियोस्
+$movies  = $conn->query("SELECT id, title FROM movies ORDER BY title ASC");
+$screens = $conn->query("SELECT id, screen_name FROM screens ORDER BY screen_name ASC");
+
+/* ================= ADD SHOW ================= */
+
+if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_show'])){
+
+    $movie_id  = (int)$_POST['movie_id'];
+    $screen_id = (int)$_POST['screen_id'];
+    $show_time = $_POST['show_time'];
+
+    if(empty($movie_id) || empty($screen_id) || empty($show_time)){
+        $msg = "⚠️ All fields required!";
+    } else {
+
+        // convert datetime-local → mysql format
+        $show_time_mysql = date('Y-m-d H:i:s', strtotime($show_time));
+
+        // check price column
+        $check = $conn->query("SHOW COLUMNS FROM shows LIKE 'price'");
+        $has_price = $check->num_rows > 0;
+
+        if($has_price){
+            $price = (float)$_POST['price'];
+
+            $stmt = $conn->prepare("
+                INSERT INTO shows (movie_id, screen_id, show_time, price)
+                VALUES (?, ?, ?, ?)
+            ");
+            $stmt->bind_param("iisd", $movie_id, $screen_id, $show_time_mysql, $price);
+
+        } else {
+
+            $stmt = $conn->prepare("
+                INSERT INTO shows (movie_id, screen_id, show_time)
+                VALUES (?, ?, ?)
+            ");
+            $stmt->bind_param("iis", $movie_id, $screen_id, $show_time_mysql);
+        }
+
+        if($stmt->execute()){
+            $msg = "🎉 Show Added Successfully!";
+        } else {
+            $msg = "❌ Error: ".$stmt->error;
+        }
+    }
 }
 
-$select_fields = "s.id, m.title, sc.screen_name, s.show_time";
-if($has_price) $select_fields .= ", s.price";
+/* ================= DELETE ================= */
+
+if(isset($_GET['delete'])){
+    $id = (int)$_GET['delete'];
+    $conn->query("DELETE FROM shows WHERE id=$id");
+    header("Location: shows.php");
+    exit;
+}
+
+/* ================= FETCH SHOWS ================= */
+
+$check = $conn->query("SHOW COLUMNS FROM shows LIKE 'price'");
+$has_price = $check->num_rows > 0;
+
+$fields = "s.id, m.title, sc.screen_name, s.show_time";
+if($has_price) $fields .= ", s.price";
 
 $shows = $conn->query("
-  SELECT $select_fields
-  FROM shows s
-  JOIN movies m ON s.movie_id = m.id
-  JOIN screens sc ON s.screen_id = sc.id
-  ORDER BY s.show_time DESC
+    SELECT $fields
+    FROM shows s
+    JOIN movies m ON s.movie_id = m.id
+    JOIN screens sc ON s.screen_id = sc.id
+    ORDER BY s.show_time DESC
 ");
 ?>
 <!doctype html>

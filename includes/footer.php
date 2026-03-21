@@ -36,12 +36,7 @@
                 हाम्रो सेवा, तपाइँको भरोसा।
             </p>
 
-            <div class="subscribe-box">
-                <input type="email" id="subEmail" placeholder="Enter your email">
-                <button onclick="subscribeEmail()">Subscribe</button>
-            </div>
-
-            <p id="subMessage" class="success-msg"></p>
+        
 
             <!-- SOCIAL ICONS -->
             <div class="social-icons">
@@ -66,15 +61,17 @@
                
     <div class="contact-info">
        <h3>About Our Service</h3>
-        <p><i class="fa-solid fa-envelope"></i> info@example.com</p>
-        <p><i class="fa-solid fa-phone"></i> +977 9800000000</p>
+        <p><i class="fa-solid fa-envelope"></i> milan@milan.com</p>
+        <p><i class="fa-solid fa-phone"></i> +977 9818220754</p>
         <p><i class="fa-solid fa-location-dot"></i> Kathmandu, Nepal</p>
         </div>
 
     </div>
+    
+
 
     <div class="footer-bottom">
-        © 2025 All Rights Reserved | Developed with ♥ by Kazi
+        © 2025 All Rights Reserved | Developed with ♥ by Milan & Tej
     </div>
 </footer>
 
@@ -109,16 +106,25 @@
 }
 
 .main-footer{
-    background: linear-gradient(135deg, #a79846ff, #c24b07ff, #792e6fff);
+     background:
+        linear-gradient(rgba(26, 8, 8, 0.99), rgba(0, 0, 0, 0.95)),
+        url("https://i.pinimg.com/1200x/2a/47/dd/2a47dd95666a2d396df9afe1d3ff3641.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     color:white;
-    padding:50px 0 20px;
+    background-size: cover;
+    background-position: center;px 0 20px;
      border-radius:10px;
+     border: 1px solid #3af307; 
+     height: 400px;
 
 }
 
 .footer-container{
     width:90%;
-    margin:auto;
+    margin-top: 20px;
+    margin-left: 70px;
     display:flex;
     justify-content:space-between;
     flex-wrap:wrap;
@@ -181,34 +187,8 @@
 }
 
 .center-text{
-    margin:10px 0;
+    margin-top:30px;
     opacity:0.9;
-}
-
-/* Subscribe */
-.subscribe-box{
-    display:flex;
-    justify-content:center;
-    margin-top:10px;
-    gap:8px;
-}
-.subscribe-box input{
-    padding:10px;
-    width:220px;
-    border:none;
-    border-radius:5px;
-}
-.subscribe-box button{
-    padding:10px 18px;
-    border:none;
-    background:#4d68ff;
-    color:white;
-    border-radius:5px;
-    cursor:pointer;
-    transition:0.3s;
-}
-.subscribe-box button:hover{
-    background:#6b82ff;
 }
 
 /* ⭐ Social Icons */
@@ -243,6 +223,7 @@
     width:100%;
     text-align:center !important;
     display:block;
+    margin-top: 45px;
 }
 
 

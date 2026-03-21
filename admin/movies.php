@@ -1,5 +1,4 @@
 <?php
-// admin/movies.php
 session_start();
 require_once '../includes/db.php';
 
@@ -14,64 +13,101 @@ $msg = '';
 $uploadDir = __DIR__ . '/../uploads/';
 $languages = ['Nepali','Hindi','English','Korean','Chinese','Japanese'];
 
-// ADD / UPDATE
+/* ================= EDIT FETCH ================= */
+$editMovie = null;
+if (isset($_GET['edit'])) {
+    $id = (int)$_GET['edit'];
+    $res = $conn->query("SELECT * FROM movies WHERE id=$id");
+    if ($res->num_rows > 0) {
+        $editMovie = $res->fetch_assoc();
+    }
+}
+
+/* ================= ADD / UPDATE ================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
     $title = trim($_POST['title']);
     $desc = trim($_POST['description']);
     $duration = ((int)$_POST['duration_hours'] * 60) + (int)$_POST['duration_minutes'];
     $genre = trim($_POST['genre']);
     $trailer = trim($_POST['trailer']);
     $language = trim($_POST['language']);
-    $posterName = $_POST['old_poster'] ?? null;
+    $posterName = $_POST['old_poster'] ?? '';
     $id = (int)($_POST['movie_id'] ?? 0);
 
-    // Handle poster upload
+    /* ===== Poster Upload ===== */
     if (!empty($_FILES['poster']['name'])) {
         $ext = strtolower(pathinfo($_FILES['poster']['name'], PATHINFO_EXTENSION));
-        $allowed = ['jpg','jpeg','png','gif'];
-
-        if (in_array($ext, $allowed)) {
-            $posterName = uniqid('p_').'.'.$ext;
+        if (in_array($ext, ['jpg','jpeg','png','gif'])) {
+            $posterName = uniqid().'.'.$ext;
             move_uploaded_file($_FILES['poster']['tmp_name'], $uploadDir.$posterName);
+        } else {
+            $msg = "❌ Invalid image format!";
         }
     }
 
-    if ($id > 0) {
-        // UPDATE existing movie
-        $stmt = $conn->prepare("UPDATE movies SET title=?,description=?,duration=?,genre=?,trailer=?,poster=?,language=? WHERE id=?");
-        $stmt->bind_param("ssissssi",$title,$desc,$duration,$genre,$trailer,$posterName,$language,$id);
-        $msg = "Movie Updated!";
+    if (empty($title)) {
+        $msg = "⚠️ Title is required!";
     } else {
-        // ADD new movie
-        $stmt = $conn->prepare("INSERT INTO movies (title,description,duration,genre,trailer,poster,language) VALUES (?,?,?,?,?,?,?)");
-        $stmt->bind_param("ssissss",$title,$desc,$duration,$genre,$trailer,$posterName,$language);
-        $msg = "Movie Added!";
+        if ($id > 0) {
+            $stmt = $conn->prepare("
+                UPDATE movies 
+                SET title=?, description=?, duration=?, genre=?, trailer=?, poster=?, language=? 
+                WHERE id=?
+            ");
+            $stmt->bind_param("ssissssi",$title,$desc,$duration,$genre,$trailer,$posterName,$language,$id);
+            $stmt->execute();
+            $msg = "🎉 Movie Updated Successfully!";
+        } else {
+            $stmt = $conn->prepare("
+                INSERT INTO movies (title,description,duration,genre,trailer,poster,language) 
+                VALUES (?,?,?,?,?,?,?)
+            ");
+            $stmt->bind_param("ssissss",$title,$desc,$duration,$genre,$trailer,$posterName,$language);
+            $stmt->execute();
+            $msg = "🎬 Movie Added Successfully!";
+        }
     }
-    $stmt->execute();
 }
 
-// DELETE
+/* ================= DELETE ================= */
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
-    $conn->query("DELETE FROM movies WHERE id=$id");
+
+    // 1️⃣ Delete related bookings
+    $stmt = $conn->prepare("DELETE FROM bookings WHERE movie_id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    // 2️⃣ Delete related shows
+    $stmt = $conn->prepare("DELETE FROM shows WHERE movie_id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    // 3️⃣ Delete poster file
+    $res = $conn->query("SELECT poster FROM movies WHERE id=$id");
+    if ($res && $row = $res->fetch_assoc()) {
+        if (!empty($row['poster']) && file_exists($uploadDir.$row['poster'])) {
+            unlink($uploadDir.$row['poster']);
+        }
+    }
+
+    // 4️⃣ Delete movie
+    $stmt = $conn->prepare("DELETE FROM movies WHERE id=?");
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
     header("Location: movies.php");
     exit;
 }
 
-// EDIT
-$editMovie = null;
-if (isset($_GET['edit'])) {
-    $id = (int)$_GET['edit'];
-    $editMovie = $conn->query("SELECT * FROM movies WHERE id=$id")->fetch_assoc();
-}
-
-$movies = $conn->query("SELECT * FROM movies ORDER BY created_at DESC");
+/* ================= FETCH ================= */
+$movies = $conn->query("SELECT * FROM movies ORDER BY id DESC");
 
 function formatDuration($m){
     return floor($m/60)."h ".($m%60)."m";
 }
 ?>
-
 <!doctype html>
 <html>
 <head>
@@ -79,7 +115,6 @@ function formatDuration($m){
 <title>CineMa Ghar - Manage Movies</title>
 <link rel="shortcut icon" href="../imgs/40b3a7667c57b37bb66735d67609798e-modified.png" type="image/x-icon">
 <style>
-/* --- CSS same as your original --- */
 body{margin:0;font-family:Arial, sans-serif;background:#f1f5f9;}
 .sidebar{width:220px;height:100vh;background:#111827;color:#fff;position:fixed;padding-top:20px;transition:0.3s;}
 .sidebar.hide{transform:translateX(-100%);}
@@ -107,10 +142,9 @@ img{width:55px;border-radius:6px;}
 </head>
 <body>
 
-  <!-- SIDEBAR -->
-  <div class="sidebar" id="sidebar">
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
     <h2>🎬 Admin</h2>
-
     <a href="dashboard.php">Dashboard</a>
     <a href="movies.php">Add Movies</a>
     <a href="slider.php">Slider</a>
@@ -119,7 +153,7 @@ img{width:55px;border-radius:6px;}
     <a href="bookings.php">Bookings</a>
     <a href="top_news.php">Top News</a>
     <a href="logout.php" class="logout">Logout</a>
-  </div>
+</div>
 
 <!-- MAIN -->
 <div class="main" id="main">

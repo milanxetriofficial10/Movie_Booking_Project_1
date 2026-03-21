@@ -11,171 +11,263 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+
 $user_id = $_SESSION['user_id'];
 
-// Fetch user info
 $sql = "SELECT * FROM users WHERE id = $user_id";
 $result = $conn->query($sql);
+$user = $result->fetch_assoc();
 
-if ($result->num_rows == 1) {
-    $user = $result->fetch_assoc();
-} else {
-    die("User not found.");
-}
-
-// Handle profile update
+// UPDATE PROFILE
 if(isset($_POST['update_profile'])) {
+
     $first_name = $_POST['first_name'];
     $last_name  = $_POST['last_name'];
     $email      = $_POST['email'];
     $contact    = $_POST['contact'];
     $address    = $_POST['address'];
 
-    $update_sql = "UPDATE users SET first_name='$first_name', last_name='$last_name', email='$email', contact='$contact', address='$address' WHERE id=$user_id";
-    if($conn->query($update_sql)) {
-        $msg = "Profile updated successfully!";
-        $user = array_merge($user, $_POST); // Update displayed info
-    } else {
-        $msg = "Error updating profile.";
-    }
-}
+    $profile_img = $user['profile_img'];
 
-// Handle password change
-if(isset($_POST['change_password'])) {
-    $current_pass = $_POST['current_password'];
-    $new_pass     = $_POST['new_password'];
-    $confirm_pass = $_POST['confirm_password'];
+    // IMAGE UPLOAD FIX
+    if(isset($_FILES['profile_img']) && $_FILES['profile_img']['name'] != "") {
 
-    if(password_verify($current_pass, $user['password'])) {
-        if($new_pass === $confirm_pass) {
-            $new_hashed = password_hash($new_pass, PASSWORD_DEFAULT);
-            $conn->query("UPDATE users SET password='$new_hashed' WHERE id=$user_id");
-            $pass_msg = "Password changed successfully!";
-        } else {
-            $pass_msg = "New passwords do not match.";
+        $target_dir = "uplimgs/40b3a7667c57b37bb66735d67609798e-modified.pngoads/";
+
+        // create folder if not exists
+        if(!is_dir($target_dir)) {
+            mkdir($target_dir, 0777, true);
         }
-    } else {
-        $pass_msg = "Current password is incorrect.";
+
+        // FIX PERMISSION ISSUE
+        chmod($target_dir, 0777);
+
+        $file_name = time() . "_" . basename($_FILES["profile_img"]["name"]);
+        $target_file = $target_dir . $file_name;
+
+        if(move_uploaded_file($_FILES["profile_img"]["tmp_name"], $target_file)) {
+            $profile_img = $target_file;
+        } else {
+            echo "<script>alert('Image upload failed! Check folder permission');</script>";
+        }
     }
+
+    $conn->query("UPDATE users SET 
+        first_name='$first_name',
+        last_name='$last_name',
+        email='$email',
+        contact='$contact',
+        address='$address',
+        profile_img='$profile_img'
+        WHERE id=$user_id");
+
+    // 🔥 REDIRECT TO HOME PAGE AFTER UPDATE
+    header("Location: index.php");
+    exit();
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>My Profile</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineMa Ghar - Profile</title>
+<link rel="shortcut icon" href="./imgs/40b3a7667c57b37bb66735d67609798e-modified.png" type="image/x-icon">
+
 <style>
-    * {box-sizing:border-box;}
-    body {
-        font-family: 'Montserrat', sans-serif;
-        background: linear-gradient(to right, #74ebd5, #ACB6E5);
-        min-height: 100vh;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+    font-family:Poppins;
+     background:
+        linear-gradient(rgba(26, 8, 8, 0.90), rgba(0, 0, 0, 0.95)),
+        url("https://i.pinimg.com/736x/a1/25/d3/a125d3d8481542af812611c5eb23ee18.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+   
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+}
+
+.profile-container{
+    background: transparent;
+    border-radius:20px;
+    padding:25px;
+    width:100%;
+    max-width:700px;
+}
+
+.profile-flex{
+    display:flex;
+    gap:20px;
+    align-items:flex-start;
+}
+
+.profile-left{
+    width:150px;
+    text-align:center;
+}
+
+.profile-left img{
+    width:120px;
+    height:120px;
+    border-radius:50%;
+    object-fit:cover;
+    border:4px solid #667eea;
+}
+
+/* 🔥 NAME + EMAIL STYLE */
+.profile-info{
+    margin-top:10px;
+}
+
+.profile-info h4{
+    font-size:16px;
+    color: #f4f0f0;
+}
+
+.profile-info p{
+    font-size:13px;
+    color: rgb(247, 242, 242);
+}
+
+.profile-left input{
+    margin-top:10px;
+}
+
+.profile-right{
+    flex:1;
+}
+
+label{
+    font-size:13px;
+    color: #fffbfb;
+    font-weight:600;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin:5px 0 12px;
+    border-radius:8px;
+    border:1px solid #ccc;
+}
+
+.error{
+    color:red;
+    font-size:12px;
+    margin-top:-8px;
+    margin-bottom:8px;
+}
+
+.btn{
+    background:#ff6b6b;
+    color:#fff;
+    padding:12px;
+    border:none;
+    border-radius:30px;
+    width:100%;
+    cursor:pointer;
+}
+
+@media(max-width:600px){
+    .profile-flex{
+        flex-direction:column;
+        align-items:center;
     }
-    .profile-container {
-        background:#fff;
-        border-radius:15px;
-        padding: 30px;
-        width: 500px;
-        text-align:center;
-        box-shadow:0 10px 25px rgba(0,0,0,0.2);
-        animation: fadeIn 1s ease;
-    }
-    @keyframes fadeIn {
-        0% {opacity:0; transform: translateY(-20px);}
-        100% {opacity:1; transform: translateY(0);}
-    }
-    img {
-        width:130px; height:130px; border-radius:50%; object-fit:cover; margin-bottom:20px;
-        transition: transform 0.3s ease;
-    }
-    img:hover { transform: scale(1.05);}
-    .tab-buttons {
-        display:flex; justify-content: center; margin-bottom: 20px;
-    }
-    .tab-buttons button {
-        background:#FF6B6B; color:#fff; border:none; padding:10px 20px; margin:0 5px; border-radius:50px; cursor:pointer;
-        transition: background 0.3s, transform 0.3s;
-        font-weight:600;
-    }
-    .tab-buttons button.active { background:#FF4757; transform: scale(1.05);}
-    .tab-buttons button:hover { transform: scale(1.05);}
-    form { display:none; text-align:left; animation: slideFade 0.5s ease forwards; }
-    form.active { display:block; }
-    @keyframes slideFade {
-        0% {opacity:0; transform: translateX(-20px);}
-        100% {opacity:1; transform: translateX(0);}
-    }
-    .row { display:flex; gap:10px; }
-    .row input { flex:1; }
-    label { font-weight:600; margin-top:10px; display:block; color:#555;}
-    input { width:100%; padding:8px 10px; margin:8px 0; border-radius:8px; border:1px solid #ccc; font-size:15px;}
-    .btn { display:inline-block; padding:12px 25px; background:#FF6B6B; color:white; border-radius:50px; border:none; font-weight:600; margin-top:15px; cursor:pointer; transition:background 0.3s, transform 0.3s; }
-    .btn:hover { background:#FF4757; transform:scale(1.05);}
-    .logout-btn { background:#333; margin-top:20px; display:block; text-align:center; text-decoration:none; padding:12px; border-radius:50px;}
-    .message {color:green; font-weight:600; margin-bottom:10px;}
+}
 </style>
 </head>
+
 <body>
 
 <div class="profile-container">
-    <img src="<?php echo $user['profile_img']; ?>" alt="Profile">
 
-    <div class="tab-buttons">
-        <button class="active" onclick="showTab('profileTab')">Edit Profile</button>
-        <button onclick="showTab('passwordTab')">Change Password</button>
+<form method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+
+<div class="profile-flex">
+
+    <!-- LEFT IMAGE -->
+    <div class="profile-left">
+        <img src="<?php echo !empty($user['profile_img']) ? $user['profile_img'] : 'default.png'; ?>">
+
+        <!-- 🔥 NAME + EMAIL SHOW -->
+        <div class="profile-info">
+            <h4><?php echo $user['first_name'] . " " . $user['last_name']; ?></h4>
+            <p><?php echo $user['email']; ?></p>
+        </div>
+
+        <input type="file" name="profile_img">
     </div>
 
-    <?php if(isset($msg)) echo "<div class='message'>$msg</div>"; ?>
-    <form id="profileTab" class="active" method="post">
-        <div class="row">
-            <div>
-                <label>First Name</label>
-                <input type="text" name="first_name" value="<?php echo $user['first_name']; ?>" required>
-            </div>
-            <div>
-                <label>Last Name</label>
-                <input type="text" name="last_name" value="<?php echo $user['last_name']; ?>" required>
-            </div>
-        </div>
+    <!-- RIGHT FORM -->
+    <div class="profile-right">
+
+        <label>First Name</label>
+        <input type="text" id="fname" name="first_name" value="<?php echo $user['first_name']; ?>">
+        <div id="fnameErr" class="error"></div>
+
+        <label>Last Name</label>
+        <input type="text" id="lname" name="last_name" value="<?php echo $user['last_name']; ?>">
+        <div id="lnameErr" class="error"></div>
+
         <label>Email</label>
-        <input type="email" name="email" value="<?php echo $user['email']; ?>" required>
+        <input type="email" id="email" name="email" value="<?php echo $user['email']; ?>">
+        <div id="emailErr" class="error"></div>
+
         <label>Contact</label>
-        <input type="text" name="contact" value="<?php echo $user['contact']; ?>" required>
+        <input type="text" id="contact" name="contact" value="<?php echo $user['contact']; ?>">
+        <div id="contactErr" class="error"></div>
+
         <label>Address</label>
-        <input type="text" name="address" value="<?php echo $user['address']; ?>" required>
+        <input type="text" id="address" name="address" value="<?php echo $user['address']; ?>">
+        <div id="addressErr" class="error"></div>
+
         <button type="submit" name="update_profile" class="btn">Update Profile</button>
-    </form>
 
-    <?php if(isset($pass_msg)) echo "<div class='message'>$pass_msg</div>"; ?>
-    <form id="passwordTab" method="post">
-        <label>Current Password</label>
-        <input type="password" name="current_password" required>
-        <label>New Password</label>
-        <input type="password" name="new_password" required>
-        <label>Confirm New Password</label>
-        <input type="password" name="confirm_password" required>
-        <button type="submit" name="change_password" class="btn">Change Password</button>
-    </form>
+    </div>
 
-    <a href="logout.php" class="logout-btn">Logout</a>
+</div>
+</form>
+
 </div>
 
 <script>
-function showTab(tabId){
-    const tabs = document.querySelectorAll('form');
-    tabs.forEach(t => t.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
+function validateForm(){
+    let valid = true;
 
-    const buttons = document.querySelectorAll('.tab-buttons button');
-    buttons.forEach(b => b.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    document.querySelectorAll('.error').forEach(e => e.innerHTML="");
+
+    let fname = document.getElementById('fname').value.trim();
+    let lname = document.getElementById('lname').value.trim();
+    let email = document.getElementById('email').value.trim();
+    let contact = document.getElementById('contact').value.trim();
+
+    if(fname === ""){
+        document.getElementById('fnameErr').innerHTML="First name required";
+        valid=false;
+    }
+
+    if(lname === ""){
+        document.getElementById('lnameErr').innerHTML="Last name required";
+        valid=false;
+    }
+
+    if(!email.includes("@")){
+        document.getElementById('emailErr').innerHTML="Valid email required";
+        valid=false;
+    }
+
+    if(contact.length < 7){
+        document.getElementById('contactErr').innerHTML="Invalid contact";
+        valid=false;
+    }
+
+    return valid;
 }
 </script>
 
