@@ -11,11 +11,13 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-
 $user_id = $_SESSION['user_id'];
 
-$sql = "SELECT * FROM users WHERE id = $user_id";
-$result = $conn->query($sql);
+// FETCH USER
+$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 // UPDATE PROFILE
@@ -29,39 +31,74 @@ if(isset($_POST['update_profile'])) {
 
     $profile_img = $user['profile_img'];
 
-    // IMAGE UPLOAD FIX
+    // ✅ IMAGE UPLOAD FIX
     if(isset($_FILES['profile_img']) && $_FILES['profile_img']['name'] != "") {
 
-        $target_dir = "uplimgs/40b3a7667c57b37bb66735d67609798e-modified.pngoads/";
+        $target_dir = "uploads/"; // ✅ FIXED FOLDER NAME
 
-        // create folder if not exists
         if(!is_dir($target_dir)) {
-            mkdir($target_dir, 0777, true);
+            mkdir($target_dir, 0755, true);
         }
 
-        // FIX PERMISSION ISSUE
-        chmod($target_dir, 0777);
+        $file_tmp  = $_FILES['profile_img']['tmp_name'];
+        $file_name = basename($_FILES['profile_img']['name']);
+        $file_size = $_FILES['profile_img']['size'];
+        $file_error = $_FILES['profile_img']['error'];
 
-        $file_name = time() . "_" . basename($_FILES["profile_img"]["name"]);
-        $target_file = $target_dir . $file_name;
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
-        if(move_uploaded_file($_FILES["profile_img"]["tmp_name"], $target_file)) {
-            $profile_img = $target_file;
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+
+        if($file_error === 0) {
+
+            if(in_array($file_ext, $allowed)) {
+
+                if($file_size < 2 * 1024 * 1024) { // 2MB limit
+
+                    $new_name = time() . "_" . $file_name;
+                    $target_file = $target_dir . $new_name;
+
+                    if(move_uploaded_file($file_tmp, $target_file)) {
+                        $profile_img = $target_file;
+                    } else {
+                        echo "<script>alert('Upload failed!');</script>";
+                    }
+
+                } else {
+                    echo "<script>alert('File too large (max 2MB)');</script>";
+                }
+
+            } else {
+                echo "<script>alert('Only JPG, PNG, GIF allowed');</script>";
+            }
+
         } else {
-            echo "<script>alert('Image upload failed! Check folder permission');</script>";
+            echo "<script>alert('File upload error');</script>";
         }
     }
 
-    $conn->query("UPDATE users SET 
-        first_name='$first_name',
-        last_name='$last_name',
-        email='$email',
-        contact='$contact',
-        address='$address',
-        profile_img='$profile_img'
-        WHERE id=$user_id");
+    // ✅ SAFE UPDATE (prepared statement)
+    $stmt = $conn->prepare("UPDATE users SET 
+        first_name=?, 
+        last_name=?, 
+        email=?, 
+        contact=?, 
+        address=?, 
+        profile_img=? 
+        WHERE id=?");
 
-    // 🔥 REDIRECT TO HOME PAGE AFTER UPDATE
+    $stmt->bind_param("ssssssi", 
+        $first_name, 
+        $last_name, 
+        $email, 
+        $contact, 
+        $address, 
+        $profile_img, 
+        $user_id
+    );
+
+    $stmt->execute();
+
     header("Location: index.php");
     exit();
 }

@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     die("<p>Invalid request.</p>");
 }
 
-// ================= POST DATA =================
+// post data
 $show_id = (int)($_POST['show_id'] ?? 0);
 $user_name = trim($_POST['user_name'] ?? '');
 $user_email = trim($_POST['user_email'] ?? '');
@@ -29,7 +29,7 @@ if (!$show_id || !$user_name || !$user_email || !$user_mobile || !is_array($seat
     die("<p>All fields and at least one seat are required.</p>");
 }
 
-// ================= FETCH SHOW =================
+// fetch show 
 $show_stmt = $conn->prepare("SELECT price, show_time, movie_id FROM shows WHERE id=?");
 $show_stmt->bind_param('i', $show_id);
 $show_stmt->execute();
@@ -43,7 +43,7 @@ $showtime   = $show['show_time'];
 $total_price = $price * count($seats);
 $seats_json = json_encode($seats);
 
-// ================= SEAT CHECK =================
+// your seat check 
 $book_stmt = $conn->prepare("SELECT seats FROM bookings WHERE show_id=?");
 $book_stmt->bind_param('i', $show_id);
 $book_stmt->execute();
@@ -61,7 +61,7 @@ foreach ($seats as $seat) {
     }
 }
 
-// ================= INSERT BOOKING =================
+// insert booking milan 
 $user_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
 
 $insert_stmt = $conn->prepare("
@@ -88,7 +88,7 @@ if (!$insert_stmt->execute()) {
     die("<p>Booking failed.</p>");
 }
 
-// ================= PDF GENERATE =================
+// print pdf 
 $mpdf = new Mpdf(['tempDir' => __DIR__ . '/tmp']);
 
 $billHTML = "
@@ -124,7 +124,7 @@ $mpdf->WriteHTML($billHTML);
 $pdfFileName = 'bill_' . time() . '.pdf';
 $pdfContent = $mpdf->Output($pdfFileName, 'S');
 
-// ================= EMAIL SEND =================
+// your email send data
 $mail = new PHPMailer(true);
 try {
     $mail->isSMTP();
@@ -147,7 +147,7 @@ try {
     error_log("Email failed: " . $mail->ErrorInfo);
 }
 
-// ================= CONFIRMATION PAGE =================
+// page here 
 echo "
 <div style='max-width:500px;margin:50px auto;text-align:center;font-family:sans-serif;'>
     <h2>✅ Booking Confirmed</h2>
@@ -163,8 +163,6 @@ echo "
     </a>
 </div>
 ";
-
-// ================= UPDATE HEADER LINK IMMEDIATELY =================
 $_SESSION['has_booking'] = true;
 
 ?>

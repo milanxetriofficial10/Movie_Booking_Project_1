@@ -3,7 +3,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-/* DATABASE CONNECTION */
+/* database connection */
 $host = "localhost";
 $user = "root";
 $pass = "Milan@1234";
@@ -14,7 +14,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// 🔥 GET LATEST USER DATA (IMPORTANT FIX)
+// user data
 $profile_img = "";
 $first_name = "";
 
@@ -30,13 +30,13 @@ if(isset($_SESSION["user_id"])){
         $profile_img = $userData['profile_img'];
         $first_name  = $userData['first_name'];
 
-        // 🔥 UPDATE SESSION ALSO (so everywhere works)
+        // update section 
         $_SESSION["profile_img"] = $profile_img;
         $_SESSION["first_name"]  = $first_name;
     }
 }
 
-// Check if user has bookings
+// user booking 
 $hasBooking = false;
 if(isset($_SESSION["user_id"])){
     $stmt = $conn->prepare("SELECT COUNT(*) as cnt FROM bookings WHERE user_id=?");
@@ -59,7 +59,6 @@ if(isset($_SESSION["user_id"])){
 <title>CineMa Ghar - Movies</title>
 
 <style>
-/* SAME DESIGN - NO CHANGE */
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
 body{background: #0d1117;color:white;}
 .site-header{background: transparent;padding:10px 0;border-bottom:2px solid #54f603;position:sticky;top:0;z-index:999;}
@@ -80,14 +79,18 @@ body{background: #0d1117;color:white;}
     transition: all 0.4s ease;
 }
 
-/* Hover effect */
+
+
 .nav-links a:hover {
     color: #f483f2;
     text-shadow: 0 0 6px rgba(255,107,129,0.7);
     transform: scale(1.05) rotate(-1deg);
 }
 
-/* Elegant underline animation */
+
+
+
+
 .nav-links a::after {
     content: '';
     position: absolute;
@@ -105,7 +108,10 @@ body{background: #0d1117;color:white;}
     transform: scaleX(1);
     transform-origin: left;
 }
-/* ===== SEARCH BAR MAGIC ===== */
+
+
+
+/* search bar icon */
 .search-form {
     width: 300px;
 }
@@ -115,7 +121,11 @@ body{background: #0d1117;color:white;}
     width: 100%;
 }
 
-/* INPUT FIELD */
+
+
+
+
+/* input  */
 .search-box input {
     width: 100%;
     height: 42px;
@@ -130,20 +140,25 @@ body{background: #0d1117;color:white;}
     box-shadow: 0 0 8px rgba(106, 253, 8, 0.98);
 }
 
-/* GLOW ON FOCUS */
+
+
+/* focus */
 .search-box input:focus {
     border: 2px solid #00f7ff;
     box-shadow: 0 0 12px rgba(0,247,255,0.7),
                 0 0 25px rgba(0,247,255,0.4);
 }
 
-/* PLACEHOLDER STYLE */
+
+
+/* placeholder */
 .search-box input::placeholder {
     color: #aaa;
     font-style: italic;
 }
 
-/* SEARCH BUTTON */
+
+
 .search-box button {
     position: absolute;
     right: 5px;
@@ -163,18 +178,22 @@ body{background: #0d1117;color:white;}
     transition: all 0.3s ease;
 }
 
-/* BUTTON HOVER EFFECT */
+
+
+
 .search-box button:hover {
     transform: translateY(-50%) scale(1.08);
     background: transparent;
     box-shadow: 0 0 10px rgba(0,247,255,0.8);
 }
 
-/* SMOOTH HOVER GLOW FOR INPUT */
+
 .search-box:hover input {
     box-shadow: 0 0 15px rgba(255, 0, 204, 0.4);
 }
-/* ===== PROFILE ICON (CIRCLE GLOW) ===== */
+
+
+/* profiles icons */
 .profile-container {
     position: relative;
     cursor: pointer;
@@ -196,14 +215,16 @@ body{background: #0d1117;color:white;}
     transition: all 0.3s ease;
 }
 
-/* hover glow */
+
+
+
 .profile-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 0 12px rgba(0, 247, 255, 0.8),
                 0 0 25px rgba(255, 0, 204, 0.6);
 }
 
-/* image inside */
+/* profile image */
 .profile-btn img {
     width: 100%;
     height: 100%;
@@ -211,7 +232,7 @@ body{background: #0d1117;color:white;}
     border-radius: 50%;
 }
 
-/* ===== DROPDOWN MENU ===== */
+/* dropdown */
 .dropdown-menu {
     position: absolute;
     right: 0;
@@ -237,6 +258,10 @@ body{background: #0d1117;color:white;}
     display: flex;
 }
 
+
+
+
+
 /* dropdown animation */
 @keyframes dropdownFade {
     from {
@@ -248,6 +273,7 @@ body{background: #0d1117;color:white;}
         transform: translateY(0) scale(1);
     }
 }
+
 
 /* links inside */
 .dropdown-menu a {
@@ -270,7 +296,7 @@ body{background: #0d1117;color:white;}
     padding-left: 20px;
 }
 
-/* divider (optional feel) */
+/* divider  */
 .dropdown-menu a:not(:last-child) {
     border-bottom: 1px solid rgba(255,255,255,0.05);
 }
@@ -291,6 +317,7 @@ body{background: #0d1117;color:white;}
     box-shadow: 0 10px 30px rgba(0,0,0,0.7);
 }
 
+
 /* live card */
 .live-card {
     display: flex;
@@ -305,6 +332,7 @@ body{background: #0d1117;color:white;}
     background: rgba(255,255,255,0.05);
 }
 
+
 /* image */
 .live-card img {
     width: 45px;
@@ -312,6 +340,7 @@ body{background: #0d1117;color:white;}
     object-fit: cover;
     border-radius: 6px;
 }
+
 
 /* text */
 .live-info {
@@ -324,6 +353,7 @@ body{background: #0d1117;color:white;}
     color: #fff;
 }
 
+
 /* book button */
 .live-btn {
     font-size: 11px;
@@ -332,6 +362,7 @@ body{background: #0d1117;color:white;}
     font-weight: bold;
 }
 </style>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -370,18 +401,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <div class="wrapper-right">
 
-   <form method="get" action="/Movie_Booking_Project_1/search.php" class="search-form" autocomplete="off">
+   <form method="get" action="#" class="search-form" autocomplete="off">
   <div class="search-box">
 
     <input type="text" id="liveSearch" name="q" placeholder="Search movies...">
 
     <button type="submit">Search</button>
 
-    <!-- LIVE RESULT DROPDOWN -->
+    <!-- search results -->
     <div id="searchResult"></div>
 
   </div>
 </form>
+
 
       <!-- PROFILE -->
       <div class="profile-container">

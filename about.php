@@ -1,16 +1,16 @@
 <?php
-// about.php
+// this is a about page milan & tej
 require_once 'includes/db.php';
 require_once 'includes/header.php';
 
 $conn = db_connect();
 
-// Force new logo image (ignore DB)
+// cinema ghar 
 $cinema_name = 'CineMa Ghar';
 $logo = 'imgs/40b3a7667c57b37bb66735d67609798e-modified.png'; // <-- put your image link here
 $description = 'Welcome to CineMa Ghar – where stories come alive on the big screen!';
 
-// Fetch dynamic stats safely
+// fetch dynamic 
 $movies_count = $conn->query("SELECT COUNT(*) as total FROM movies")->fetch_assoc()['total'] ?? 0;
 $bookings_count = $conn->query("SELECT COUNT(*) as total FROM bookings")->fetch_assoc()['total'] ?? 0;
 $users_count = $conn->query("SELECT COUNT(*) as total FROM users")->fetch_assoc()['total'] ?? 0;
@@ -380,7 +380,7 @@ $users_count = $conn->query("SELECT COUNT(*) as total FROM users")->fetch_assoc(
     }
 </style>
 <main class="about-main">
-    <!-- Hero Section with left logo and right text -->
+    <!-- Hero Section -->
     <div class="hero">
         <div class="hero-left">
             <div class="logo-wrapper">
@@ -408,6 +408,8 @@ $users_count = $conn->query("SELECT COUNT(*) as total FROM users")->fetch_assoc(
             </div>
         </div>
     </div>
+
+
 
     <!-- Features Section -->
     <div class="features-section">
@@ -458,6 +460,8 @@ $users_count = $conn->query("SELECT COUNT(*) as total FROM users")->fetch_assoc(
         </div>
     </div>
 
+
+
     <!-- Call to Action -->
     <div class="cta-section">
         <h2>Ready for the big screen?</h2>
@@ -468,6 +472,8 @@ $users_count = $conn->query("SELECT COUNT(*) as total FROM users")->fetch_assoc(
         </div>
     </div>
 </main>
+
+
 
 <!-- Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
