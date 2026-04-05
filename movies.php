@@ -177,7 +177,7 @@ body {
 }
 
 
-/* ===== SECTION TITLE ===== */
+/* section tittle */
 h2.section-title {
     margin: 40px 40px 20px;
     color: #ffeb3b;
@@ -189,7 +189,7 @@ h2.section-title {
     padding-left: 15px;
 }
 
-/* ===== MOVIE GRID ===== */
+/* movie grid */
 .movie-grid {
     display: flex;
     flex-wrap: wrap;
@@ -198,7 +198,7 @@ h2.section-title {
     justify-content: flex-start;
 }
 
-/* ===== MOVIE CARD ===== */
+/* movie card */
 .movie-card {
     position: relative;
     width: 225px;
@@ -283,7 +283,7 @@ h2.section-title {
     100% { left: 125%; opacity: 1; }
 }
 
-/* Trailer button floats above card */
+/* Trailer button */
 .movie-card .trailer-btn {
     position: absolute;
     bottom: 105%;
@@ -404,7 +404,7 @@ h2.section-title {
     transform: translateY(-2px);
 }
 
-/* ===== TITLE LINE ===== */
+/* title line  */
 .line-container { position: relative; width: 100%; text-align: center; margin: 0; }
 .line-container h2 {
     display: inline-block;
@@ -430,7 +430,7 @@ h2.section-title {
     border-radius: 2px;
 }
 
-/* ===== RESPONSIVE ===== */
+/* resp */
 @media (max-width: 1024px) {
     .movie-grid { padding: 10px 24px 32px; gap: 20px; }
 }
@@ -557,6 +557,9 @@ h2.section-title {
 <?php require 'includes/footer.php'; ?>
 </div>
 
+
+
+
 <script>
 // Build film strips dynamically
 ['stripTop','stripBot'].forEach(id => {
@@ -573,6 +576,8 @@ h2.section-title {
     }
 });
 
+
+
 // Build stars
 const starsEl = document.getElementById('loaderStars');
 for(let i = 0; i < 70; i++){
@@ -582,6 +587,8 @@ for(let i = 0; i < 70; i++){
     s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*3+1.5).toFixed(1)}s;--delay:${(Math.random()*2).toFixed(1)}s;`;
     starsEl.appendChild(s);
 }
+
+
 
 // Page loader hide
 window.addEventListener("load", () => {

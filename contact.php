@@ -1,5 +1,4 @@
 <?php
-// contact.php
 session_start();
 require_once 'includes/db.php';
 require_once 'includes/header.php';
@@ -9,12 +8,14 @@ $conn = db_connect();
 // Default cinema details
 $cinema = [
     'address' => 'Kathmandu, Nepal',
-    'phone'   => '+977 9800000000',
-    'email'   => 'info@cinemaghar.com',
+    'phone'   => '+977 9818220754',
+    'email'   => 'cinnemaghar@cinemaghar.com',
     'map_url' => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3532.1249468993346!2d85.34210707459769!3d27.713428225224874!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb197a0abda05d%3A0x113f5dae44c75759!2sPashupati%20Multiple%20Campus%20(PMC)!5e0!3m2!1sen!2snp!4v1774073377375!5m2!1sen!2snp'
 ];
 
-// Try to fetch from database if table exists
+
+
+// fetch from database
 $check = $conn->query("SHOW TABLES LIKE 'cinema_info'");
 if ($check && $check->num_rows > 0) {
     $res = $conn->query("SELECT address, phone, email, map_embed FROM cinema_info LIMIT 1");
@@ -26,6 +27,8 @@ if ($check && $check->num_rows > 0) {
         $cinema['map_url'] = $row['map_embed'] ?? $cinema['map_url'];
     }
 }
+
+
 
 // Handle form submission
 $msg_sent = false;
@@ -61,6 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_contact'])) {
     }
 }
 ?>
+
+
 
 <style>
     body{

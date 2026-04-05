@@ -18,7 +18,7 @@ if (!$movie) {
     exit;
 }
 
-/* ===== Convert Duration to Hour + Minute ===== */
+/* Convert Duration to Hour + Minute */
 $durationFormatted = 'N/A';
 
 if (!empty($movie['duration']) && is_numeric($movie['duration'])) {
@@ -73,7 +73,6 @@ $shows = $stmt->get_result();
 <meta charset="UTF-8">
 <title><?=htmlspecialchars($movie['title'])?></title>
 
-<!-- 🔹 Timro existing CSS exactly yehi xa (unchanged) -->
 <style>
 .loader {
   display: flex;
@@ -127,12 +126,10 @@ $shows = $stmt->get_result();
 }
 
 
-/* ===== Reset & Base ===== */
+/* Reset & Base */
 body {
   font-family: 'Poppins', sans-serif;
-  background:
-        linear-gradient(rgba(26, 8, 8, 0.58), rgba(0, 0, 0, 0.95)),
-        url("https://i.pinimg.com/736x/a1/25/d3/a125d3d8481542af812611c5eb23ee18.jpg");
+  background: transparent;  
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -149,7 +146,7 @@ body {
 a { text-decoration: none; transition: all 0.3s ease; }
 h2,h3 { margin: 0; font-weight: 600; }
 
-/* ===== Container ===== */
+/* Container */
 .movie-detail {
   display: flex;
   flex-wrap: wrap;
@@ -165,7 +162,7 @@ h2,h3 { margin: 0; font-weight: 600; }
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== Poster ===== */
+/* Poster */
 .poster {
   flex-shrink: 0;
   max-width: 400px;
@@ -192,7 +189,7 @@ h2,h3 { margin: 0; font-weight: 600; }
   filter: brightness(1.12);
 }
 
-/* ===== Info Section ===== */
+/* Info Section */
 .info {
   flex: 1;
   display: flex;
@@ -226,7 +223,7 @@ h2,h3 { margin: 0; font-weight: 600; }
   color: #cbd5e1;
 }
 
-/* ===== Stats ===== */
+/* Stats */
 .info .movie-stats {
   display: flex;
   justify-content: space-between;
@@ -289,17 +286,39 @@ h3 {
   color: #e2e8f0;
 }
 
-/* ===== Buttons ===== */
-.show-list li .btn {
-  background: linear-gradient(90deg, #3b82f6, #2563eb);
-  color: #fff;
-  padding: 10px 18px;
-  border-radius: 10px;
-  font-weight: bold;
-  width: 150px;
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  animation: pulseBtn 2.2s infinite ease;
+#bookBtn {
+    margin-left: auto;
+    display: inline-flex;
+
+    width: 150px;
+    height: 40px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    background: linear-gradient(135deg, #ff3d3d, #e60000);
+    color: #fff;
+
+    text-decoration: none;
+    border-radius: 6px;
+
+    align-items: center;
+    justify-content: center;
+
+    transition: 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 61, 61, 0.25);
+}
+
+/* lock */
+#bookBtn.locked {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* hover */
+#bookBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 18px rgba(255, 0, 0, 0.35);
 }
 
 @keyframes pulseBtn {
@@ -308,12 +327,8 @@ h3 {
   100% { transform: scale(1); box-shadow: 0 0 10px rgba(59,130,246,0.4); }
 }
 
-.show-list li .btn:hover {
-  transform: scale(1.1);
-  background: linear-gradient(90deg, #60a5fa, #3b82f6);
-}
 
-/* ===== Responsive ===== */
+/* Responsive  */
 @media(max-width:992px){
   .movie-detail { flex-direction: column; align-items:center; }
   .poster { max-width:100%; }
@@ -324,12 +339,14 @@ h3 {
   .show-list li .btn { width:100%; text-align:center; }
 }
 
+
+
 </style>
 </head>
 
 <body>
 
-<!-- ================= LOADER ================= -->
+<!-- loader -->
 <section class="loader" id="page-loader">
     <div class="slider" style="--i:0"></div>
     <div class="slider" style="--i:1"></div>
@@ -337,10 +354,9 @@ h3 {
     <div class="slider" style="--i:3"></div>
     <div class="slider" style="--i:4"></div>
 </section>
-<!-- =============== END LOADER =============== -->
 
 
-<!-- ================= PAGE CONTENT ================= -->
+<!-- page content -->
 <div id="page-content" style="display:none;">
 
 <div class="movie-detail">
@@ -365,38 +381,58 @@ h3 {
 
     <p><strong>Genre:</strong> <?=htmlspecialchars($movie['genre'] ?? 'N/A')?></p>
 
-    <h3>Upcoming Shows</h3>
+<h3>Now Showing</h3>
 
-    <?php if($shows && $shows->num_rows > 0): ?>
-    <ul class="show-list">
+<?php if($shows && $shows->num_rows > 0): ?>
 
-    <?php while($s = $shows->fetch_assoc()): ?>
-<li>
-    <span>
-        <?=date('M j, Y h:i A', strtotime($s['show_time']))?>
-        <?php if($screenExists): ?>
-            — <?=htmlspecialchars($s['screen_name'])?>
-        <?php endif; ?>
-        — Rs <?=htmlspecialchars($priceExists ? ($s['price'] ?? 0) : 0)?>
-    </span>
+<?php
+$allShows = [];
+while($s = $shows->fetch_assoc()){
+    $allShows[] = $s;
+}
+?>
 
-    <?php
-        $redirectUrl = "book.php?show_id=" . $s['id'];
-        $encodedRedirect = urlencode($redirectUrl);
-    ?>
 
-    <?php if(!isset($_SESSION['user_id'])): ?>
-        <a class="btn" href="login.php?redirect=<?=$encodedRedirect?>">Book Now</a>
-    <?php else: ?>
-        <a class="btn" href="<?=$redirectUrl?>">Book Now</a>
-    <?php endif; ?>
-</li>
-<?php endwhile; ?>
+<div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
 
-    </ul>
-    <?php else: ?>
-      <p style="color:#6b7280;">No upcoming shows available.</p>
-    <?php endif; ?>
+<?php foreach($allShows as $index => $s): ?>
+
+    <button 
+        onclick="selectShow(<?= $s['id'] ?>)"
+        class="time-btn"
+        id="time-btn-<?= $s['id'] ?>"
+        style="padding:8px 14px; border:none; border-radius:8px; cursor:pointer; background:#1e293b; color:white;">
+        
+        ⏰ <?= date('h:i A', strtotime($s['show_time'])) ?>
+    </button>
+
+<?php endforeach; ?>
+
+</div>
+
+<!-- button -->
+<?php
+$firstShow = $allShows[0];
+$redirectUrl = "book.php?show_id=" . $firstShow['id'];
+$encodedRedirect = urlencode($redirectUrl);
+?>
+
+<?php if(!isset($_SESSION['user_id'])): ?>
+    <a id="bookBtn" class="btn" href="login.php?redirect=<?=$encodedRedirect?>">
+        🎟 Book Now
+    </a>
+<?php else: ?>
+    <a id="bookBtn" class="btn" href="<?=$redirectUrl?>">
+        🎟 Book Now
+    </a>
+<?php endif; ?>
+
+<!-- input -->
+<input type="hidden" id="selectedShow" value="">
+
+<?php else: ?>
+<p style="color:#6b7280;">No upcoming shows available.</p>
+<?php endif; ?>
 
   </div>
 </div>
@@ -419,6 +455,35 @@ window.addEventListener("load", () => {
         }, 500);
     }, 800);
 });
+
+
+let bookBtn = document.getElementById("bookBtn");
+let selected = document.getElementById("selectedShow");
+
+// default lock
+bookBtn.classList.add("locked");
+
+function selectShow(showId){
+    selected.value = showId;
+
+    let isLoggedIn = <?= isset($_SESSION['user_id']) ? 'true' : 'false' ?>;
+
+    // unlock button
+    bookBtn.classList.remove("locked");
+
+    if(isLoggedIn){
+        bookBtn.href = "book.php?show_id=" + showId;
+    } else {
+        bookBtn.href = "login.php?redirect=" + encodeURIComponent("book.php?show_id=" + showId);
+    }
+
+    // reset colors
+    document.querySelectorAll(".time-btn").forEach(btn=>{
+        btn.style.background = "#1e293b";
+    });
+
+    document.getElementById("time-btn-" + showId).style.background = "#3b82f6";
+}
 </script>
 
 </body>

@@ -7,6 +7,7 @@ if ($conn->connect_error) {
     die("Database Connection Failed: " . $conn->connect_error);
 }
 
+
 // Get form data safely
 $first    = trim($_POST['first_name'] ?? '');
 $last     = trim($_POST['last_name'] ?? '');
@@ -18,42 +19,56 @@ $confirm  = trim($_POST['confirm_password'] ?? '');
 // Error array
 $errors = [];
 
+
 // Basic empty check
 if ($first === '' || $last === '' || $email === '' || $contact === '' || $password === '' || $confirm === '') {
     $errors[] = "All fields are required!";
 }
+
+
 
 // Email validation
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errors[] = "Invalid email format!";
 }
 
+
+
 // Password match check
 if ($password !== $confirm) {
     $errors[] = "Passwords do not match!";
 }
 
-// 🔐 PASSWORD RULES
 
+
+// password check 
 // Length (10–15)
 if (strlen($password) < 10 || strlen($password) > 15) {
     $errors[] = "Password must be between 10 and 15 characters.";
 }
+
+
 
 // At least 2 numbers
 if (preg_match_all('/\d/', $password) < 2) {
     $errors[] = "Password must contain at least 2 numbers.";
 }
 
+
+
 // Must contain # or @
 if (!preg_match('/[#@]/', $password)) {
     $errors[] = "Password must contain at least one # or @.";
 }
 
+
+
 // First letter capital
 if (!preg_match('/^[A-Z]/', $password)) {
     $errors[] = "Password must start with a capital letter.";
 }
+
+
 
 // Check if email already exists
 $check = $conn->prepare("SELECT id FROM users WHERE email = ?");

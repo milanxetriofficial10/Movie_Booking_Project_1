@@ -1,5 +1,4 @@
 <?php
-// admin/dashboard.php
 session_start();
 require_once '../includes/db.php';
 
@@ -42,12 +41,12 @@ body{
   background:#f1f5f9;
 }
 
-/* WRAPPER */
+/* wrapper */
 .admin-wrapper{
   display:flex;
 }
 
-/* SIDEBAR */
+/* sidebar */
 .sidebar{
   width:220px;
   height:100vh;
@@ -82,7 +81,7 @@ body{
   padding-left:25px;
 }
 
-/* MAIN */
+/* main */
 .main{
   margin-left:220px;
   padding:30px;
@@ -94,7 +93,7 @@ body{
   margin-left:0;
 }
 
-/* TOP BAR */
+/* top bar */
 .topbar{
   display:flex;
   align-items:center;
@@ -102,7 +101,7 @@ body{
   margin-bottom:20px;
 }
 
-/* MENU ICON */
+/* menu btn */
 .menu-btn{
   font-size:24px;
   cursor:pointer;
@@ -112,7 +111,7 @@ body{
   border-radius:6px;
 }
 
-/* HEADER */
+/* header */
 .header{
   background:#fff;
   padding:15px 20px;
@@ -120,7 +119,7 @@ body{
   box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* CARDS */
+/* card */
 .cards{
   display:flex;
   gap:20px;
@@ -148,7 +147,6 @@ body{
   color:#2563eb;
 }
 
-/* LOGOUT */
 .logout{
   color:#f87171 !important;
 }
@@ -160,7 +158,7 @@ body{
 
 <div class="admin-wrapper">
 
-  <!-- SIDEBAR -->
+  <!-- sidebar -->
   <div class="sidebar" id="sidebar">
     <h2>🎬 Admin</h2>
 
@@ -170,14 +168,15 @@ body{
     <a href="screens.php">Screens</a>
     <a href="shows.php">Shows</a>
     <a href="bookings.php">Bookings</a>
+    <a href="cancel_requests.php">Requests</a>
     <a href="top_news.php">Top News</a>
     <a href="logout.php" class="logout">Logout</a>
   </div>
 
-  <!-- MAIN -->
+  <!-- main -->
   <div class="main" id="main">
 
-    <!-- TOP BAR -->
+    <!-- top bar -->
     <div class="topbar">
       <div class="menu-btn" onclick="toggleMenu()">☰</div>
       <h2>Dashboard</h2>

@@ -40,6 +40,7 @@ if(isset($_POST['login'])) {
         echo "<script>alert('User not found!'); window.history.back();</script>";
     }
 } else {
+    
     // If accessed directly, redirect to login page
     header("Location: login.php");
     exit();

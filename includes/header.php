@@ -60,7 +60,19 @@ if(isset($_SESSION["user_id"])){
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Poppins",sans-serif;}
-body{background: #0d1117;color:white;}
+ body{
+    background:
+        linear-gradient(rgba(26,8,8,0.50), rgba(0,0,0,0.50)),
+        url("../imgs/moviebackgrund.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #f8fafc;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+  }
 .site-header{background: transparent;padding:10px 0;border-bottom:2px solid #54f603;position:sticky;top:0;z-index:999;}
 .navbar{max-width:1200px;height:40px;margin:auto;display:flex;align-items:center;justify-content:space-between;}
 .logo-area{display:flex;align-items:center;gap:20px;}
@@ -86,10 +98,6 @@ body{background: #0d1117;color:white;}
     text-shadow: 0 0 6px rgba(255,107,129,0.7);
     transform: scale(1.05) rotate(-1deg);
 }
-
-
-
-
 
 .nav-links a::after {
     content: '';
@@ -302,7 +310,7 @@ body{background: #0d1117;color:white;}
 }
 .wrapper-right{display:flex;align-items:center;gap:40px;}
 
-/* ===== LIVE SEARCH DROPDOWN ===== */
+/* live search */
 #searchResult {
     position: absolute;
     top: 110%;
@@ -364,6 +372,7 @@ body{background: #0d1117;color:white;}
 </style>
 
 
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const profile = document.querySelector(".profile-container");
@@ -380,8 +389,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-</head>
 
+</head>
 <body>
 
 <header class="site-header">
@@ -415,7 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
 </form>
 
 
-      <!-- PROFILE -->
+      <!-- profile -->
       <div class="profile-container">
         <div class="profile-btn">
           <?php

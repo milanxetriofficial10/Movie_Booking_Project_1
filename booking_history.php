@@ -1,19 +1,33 @@
 <?php
 session_start();
 require 'includes/db.php';
-require 'includes/header.php';
 require __DIR__ . '/vendor/autoload.php';
 
 use Mpdf\Mpdf;
 
+$conn = db_connect();
+$user_id = (int)$_SESSION['user_id'];
+
+// LOGIN CHECK
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-$conn = db_connect();
-$user_id = (int)$_SESSION['user_id'];
+// ===== DELETE BOOKING =====
+if (isset($_GET['delete_id'])) {
+    $delete_id = (int)$_GET['delete_id'];
 
+    $stmt = $conn->prepare("DELETE FROM bookings WHERE id=? AND user_id=?");
+    $stmt->bind_param("ii", $delete_id, $user_id);
+
+    if ($stmt->execute()) {
+        header("Location: booking_history.php?deleted=1");
+        exit;
+    }
+}
+
+// ===== FETCH BOOKINGS =====
 $stmt = $conn->prepare("
     SELECT b.*, m.title 
     FROM bookings b 
@@ -24,6 +38,9 @@ $stmt = $conn->prepare("
 $stmt->bind_param('i', $user_id);
 $stmt->execute();
 $bookings = $stmt->get_result();
+
+// ✅ अब मात्र header include
+require 'includes/header.php';
 ?>
 
 <style>
@@ -351,6 +368,24 @@ $bookings = $stmt->get_result();
             display: none;
         }
     }
+    .delete-btn {
+    display: inline-flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    background: linear-gradient(135deg, #ff4d4d, #cc0000);
+    border-radius: 40px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.delete-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(255,0,0,0.4);
+}
 </style>
 
 <main class="container">
@@ -448,7 +483,12 @@ $bookings = $stmt->get_result();
                         <a class="download-btn" href="data:application/pdf;base64,<?= base64_encode($pdfContent) ?>" download="<?= $pdfFileName ?>">
                             ⬇ Download Ticket
                         </a>
+                        <a class="delete-btn"
+   href="user_request.php?request_id=<?= $row['id'] ?>">
+   🗑 Cancel Movie Book
+</a>
                     </div>
+
                 </div>
             <?php endwhile; ?>
         </div>

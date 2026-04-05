@@ -11,14 +11,18 @@
             margin: 0;
             padding: 0;
         }
-
-        body {
-            background: #0a0a0a;
-            font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background:
+        linear-gradient(rgba(26,8,8,0.80), rgba(0,0,0,0.80)),
+        url("./imgs/moviebackgrund.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #fff;
+}
+    
 
         .demo-space {
             flex: 1;

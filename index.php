@@ -62,8 +62,8 @@ function formatDuration($minutes) {
 body {
     font-family: 'Poppins', Arial, sans-serif;
     background:
-        linear-gradient(rgba(26,8,8,0.90), rgba(0,0,0,0.95)),
-        url("https://i.pinimg.com/736x/a1/25/d3/a125d3d8481542af812611c5eb23ee18.jpg");
+        linear-gradient(rgba(26,8,8,0.50), rgba(0,0,0,0.50)),
+        url("../imgs/moviebackgrund.jpg");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -74,7 +74,7 @@ body {
 #page-loader {
     position: fixed; top:0; left:0;
     width:100%; height:100%;
-    background:#000;
+    background: #1b0e03;
     display:flex; flex-direction:column;
     align-items:center; justify-content:center;
     z-index:9999;
@@ -184,7 +184,7 @@ body {
 }
 
 
-/* ===== SECTION TITLE ===== */
+/* section */
 h2.section-title {
     margin: 40px 40px 20px;
     color: #ffeb3b;
@@ -196,7 +196,7 @@ h2.section-title {
     padding-left: 15px;
 }
 
-/* ===== NEWS TICKER ===== */
+/* news content*/
 .ticker-container {
     background: rgba(255,232,0,0.12);
     overflow: hidden;
@@ -216,7 +216,7 @@ h2.section-title {
     100% { transform: translateX(-100%); }
 }
 
-/* ===== SLIDER ===== */
+/*  slider */
 .slider-container {
     position: relative;
     width: 100%;
@@ -291,7 +291,7 @@ h2.section-title {
 }
 .slider-dots span.active { background: #ff4c60; }
 
-/* ===== MOVIE GRID ===== */
+/* movie grid */
 .movie-grid {
     display: flex;
     flex-wrap: wrap;
@@ -300,7 +300,7 @@ h2.section-title {
     justify-content: flex-start;
 }
 
-/* ===== MOVIE CARD ===== */
+/* movie card */
 .movie-card {
     position: relative;
     width: 225px;
@@ -436,7 +436,7 @@ h2.section-title {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-align: center;   /* ← थप्नुस् */
+    text-align: center; 
 }
 
 .movie-card .language {
@@ -532,7 +532,7 @@ h2.section-title {
     border-radius: 2px;
 }
 
-/* ===== RESPONSIVE ===== */
+/* resp */
 @media (max-width: 1024px) {
     .movie-grid { padding: 10px 24px 32px; gap: 20px; }
 }
@@ -559,6 +559,7 @@ h2.section-title {
 </style>
 </head>
 <body>
+
 
 <div id="page-loader">
     <div class="loader-vignette"></div>
@@ -604,6 +605,11 @@ h2.section-title {
 <div id="page-content" style="display:none;">
 
 
+
+
+
+
+
 <!-- Slider -->
 <div class="slider-container">
 <?php foreach($slides as $s): ?>
@@ -623,6 +629,11 @@ h2.section-title {
 <?php endforeach; ?>
     <div class="slider-dots"></div>
 </div>
+
+
+
+
+
 
 
 
@@ -657,6 +668,12 @@ h2.section-title {
 <?php endif; ?>
 </section>
 
+
+
+
+
+
+
 <!-- Upcoming Movies Section -->
 <h2 class="section-title">⏳ Upcoming Movies</h2>
 <section class="movie-grid">
@@ -688,6 +705,11 @@ h2.section-title {
 <?php require 'includes/footer.php'; ?>
 </div>
 
+
+
+
+
+
 <script>
 // Slider
 let slides = document.querySelectorAll('.slider-slide');
@@ -710,6 +732,8 @@ function goToSlide(i){ current=i; showSlide(current); }
 setInterval(()=>{ current=(current+1)%slides.length; showSlide(current); },5000);
 showSlide(0);
 
+
+
 // Build film strips dynamically
 ['stripTop','stripBot'].forEach(id => {
     const el = document.getElementById(id);
@@ -725,6 +749,8 @@ showSlide(0);
     }
 });
 
+
+
 // Build stars
 const starsEl = document.getElementById('loaderStars');
 for(let i = 0; i < 70; i++){
@@ -734,6 +760,8 @@ for(let i = 0; i < 70; i++){
     s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*3+1.5).toFixed(1)}s;--delay:${(Math.random()*2).toFixed(1)}s;`;
     starsEl.appendChild(s);
 }
+
+
 
 // Page loader hide
 window.addEventListener("load", () => {

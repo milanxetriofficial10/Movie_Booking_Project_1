@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-require 'includes/header.php'; // ✅ keep this ONLY
+require 'includes/header.php'; 
 
 $conn = db_connect();
 
@@ -52,13 +52,8 @@ $show_time = date('d M Y, h:i A', strtotime($show['show_date'] . ' ' . $show['sh
     box-sizing: border-box;
 }
 
-/* ❌ body flex हटायो */
-body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #0b1120 0%, #0f172a 100%);
-}
 
-/* ✅ center only this page */
+/* center only this page */
 .review-wrapper {
     min-height: 100vh;
     display: flex;
@@ -67,17 +62,16 @@ body {
     padding: 2rem;
 }
 
-/* बाकी CSS SAME */
 .review-card {
     max-width: 1300px;
     width: 100%;
-    background: rgba(15, 25, 45, 0.65);
+    background: transparent;
     border-radius: 2rem;
     padding: 2rem;
 }
 
-        /* Animated background overlay */
-        body::before {
+    /* Animated background overlay */
+ body::before {
             content: "";
             position: fixed;
             top: 0;
@@ -109,7 +103,7 @@ body {
             flex-wrap: wrap;
         }
 
-        /* ---------- LEFT POSTER ---------- */
+        /* poster box */
         .poster-box {
             flex: 0 0 280px;
             position: relative;
@@ -164,7 +158,7 @@ body {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.2rem;
-            background: rgba(0, 0, 0, 0.3);
+            background: transparent;
             border-radius: 1.5rem;
             padding: 1.5rem;
             margin-bottom: 1.8rem;
@@ -294,15 +288,17 @@ body {
         /* Buttons */
         .action-buttons {
             display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
+            gap: 2rem;
+            margin-top: 5rem;
             flex-wrap: wrap;
+            margin-left: 450px;
         }
 
         .confirm-btn, .modify-btn {
             flex: 1;
-            padding: 0.9rem;
-            border-radius: 50px;
+             width: 200px;
+            padding: 0.7rem;
+            border-radius: 40px;
             font-weight: 600;
             font-size: 1rem;
             cursor: pointer;
@@ -313,18 +309,18 @@ body {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 0.5rem;
         }
 
         .confirm-btn {
-            background: linear-gradient(95deg, #f97316, #ea580c);
+            background: linear-gradient(95deg, #ef6807, #549203);
             color: white;
-            box-shadow: 0 8px 20px -6px rgba(249, 115, 22, 0.4);
+            box-shadow: 0 8px 20px -6px rgba(251, 67, 46, 0.99);
         }
 
         .confirm-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 25px -8px rgba(249, 115, 22, 0.6);
+            box-shadow: 0 15px 25px -8px rgba(64, 93, 241, 0.6);
             filter: brightness(1.05);
         }
 
@@ -415,7 +411,7 @@ body {
 </div>
 
 <div class="review-card">
-    <h2><i class="fas fa-ticket-alt"></i> Review Your Booking</h2>
+    <h2>Review Your Movie Booking Here</h2>
 
     <div class="review-content">
         <div class="poster-box">
@@ -464,6 +460,15 @@ body {
             </div>
 
             <div class="action-buttons">
+
+            <form method="get" action="book.php">
+                    <input type="hidden" name="show_id" value="<?= $show_id ?>">
+                    <button type="submit" class="modify-btn">Modify</button>
+                </form>
+
+
+
+
                 <form id="confirm-form" method="post" action="booking_confirm.php">
                     <input type="hidden" name="show_id" value="<?= $show_id ?>">
                     <input type="hidden" name="seats" id="seats-input" value='<?= $seats_json ?>'>
@@ -473,10 +478,6 @@ body {
                     <button type="submit" class="confirm-btn">Confirm</button>
                 </form>
 
-                <form method="get" action="book.php">
-                    <input type="hidden" name="show_id" value="<?= $show_id ?>">
-                    <button type="submit" class="modify-btn">Modify</button>
-                </form>
             </div>
         </div>
     </div>
